@@ -6,20 +6,31 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 
+class PlatformKind(models.Model):
+    """The platforms' kinds (Home server, VPS, Shared hosting…), managed on the Settings page. A
+    platform keeps its kind's slug (`Platform.kind`), so renaming a kind never touches the
+    platforms. One with platforms can't be deleted."""
+
+    name = models.CharField(max_length=60, unique=True)
+    slug = models.SlugField(max_length=60, unique=True)
+    # The platform renews its certificates itself (certbot over HTTP), so every name on one must
+    # point there: the health checks flag one that points elsewhere (monitoring.checks). Off
+    # where the provider renews them, by its own means.
+    renews_certificates = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class Platform(models.Model):
     """Where things run: a home server, a VPS, shared hosting, a client's server…"""
 
-    class Kind(models.TextChoices):
-        HOME_SERVER = 'home_server', 'Home server'
-        VPS = 'vps', 'VPS'
-        SHARED_HOSTING = 'shared_hosting', 'Shared hosting'
-        CLIENT_SERVER = 'client_server', 'Client server'
-        LAN_DEVICE = 'lan_device', 'LAN device'
-        THIRD_PARTY = 'third_party', 'Third-party hosting'
-
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
-    kind = models.CharField(max_length=20, choices=Kind.choices)
+    kind = models.CharField(max_length=60)      # a PlatformKind's slug
     provider = models.CharField(max_length=100, blank=True)
     location = models.CharField(max_length=100, blank=True)
     public_ips = models.JSONField(default=list, blank=True)
@@ -35,6 +46,11 @@ class Platform(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        # The import and the admin validate through here (the API's serializer checks it too).
+        if self.kind and not PlatformKind.objects.filter(slug=self.kind).exists():
+            raise ValidationError({'kind': f'No such platform kind: "{self.kind}".'})
 
 
 class Client(models.Model):
@@ -160,16 +176,30 @@ class Environment(models.Model):
         return f'{self.project}&nbsp;&nbsp;·&nbsp;&nbsp;{self.name}'
 
 
-class Repository(models.Model):
-    class Hosting(models.TextChoices):
-        GITHUB = 'github', 'GitHub'
-        BITBUCKET = 'bitbucket', 'Bitbucket'
-        HOSTINGER = 'hostinger', 'Hostinger (deploy remote)'
-        LOCAL = 'local', 'Local only'
+class RepositoryHosting(models.Model):
+    """Where repositories are hosted (GitHub, Bitbucket, Local only…), managed on the Settings
+    page. A repository keeps its hosting's slug (`Repository.hosting`), so renaming one never
+    touches the repositories. One with repositories can't be deleted."""
 
+    # The GitHub sync's: it puts the repos it finds there, and makes the entry again if it's gone.
+    GITHUB = 'github'
+    LOCAL = 'local'
+
+    name = models.CharField(max_length=60, unique=True)
+    slug = models.SlugField(max_length=60, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Repository(models.Model):
     name = models.CharField(max_length=120)
     slug = models.SlugField(max_length=120, unique=True)
-    hosting = models.CharField(max_length=20, choices=Hosting.choices, default=Hosting.LOCAL)
+    # A RepositoryHosting's slug.
+    hosting = models.CharField(max_length=60, default=RepositoryHosting.LOCAL)
     remote_url = models.CharField(max_length=255, blank=True)
     local_path = models.CharField(max_length=255, blank=True)
     private = models.BooleanField(default=True)
@@ -198,6 +228,11 @@ class Repository(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        # The import and the admin validate through here (the API's serializer checks it too).
+        if self.hosting and not RepositoryHosting.objects.filter(slug=self.hosting).exists():
+            raise ValidationError({'hosting': f'No such repository hosting: "{self.hosting}".'})
 
 
 class Dependency(models.Model):

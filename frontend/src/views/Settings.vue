@@ -1,7 +1,7 @@
 <script setup>
 // The catalog's lists: the project groups (the dashboard's sections, in their order), the
-// clients, the technologies and their categories. Add, rename, delete; groups also reorder
-// and can be hidden.
+// clients, the technologies and their categories, the platforms' kinds. Add, rename, delete;
+// groups also reorder and can be hidden.
 import { computed, onMounted, ref } from 'vue'
 import { NavArrowDown, NavArrowUp } from '@iconoir/vue'
 import Container from '@/mini/components/Container.vue'
@@ -37,18 +37,43 @@ async function loadCategories() {
     categoriesError.value = e.message || 'Could not load the categories.'
   }
 }
+const kinds = ref([])
+const kindsError = ref('')
+async function loadKinds() {
+  try {
+    kinds.value = await api('platform-kinds/')
+    kindsError.value = ''
+  } catch (e) {
+    kindsError.value = e.message || 'Could not load the platform kinds.'
+  }
+}
+const hostings = ref([])
+const hostingsError = ref('')
+async function loadHostings() {
+  try {
+    hostings.value = await api('repository-hostings/')
+    hostingsError.value = ''
+  } catch (e) {
+    hostingsError.value = e.message || 'Could not load the repository hostings.'
+  }
+}
 onMounted(() => {
   catalog.load()
   loadGroups()
   loadCategories()
+  loadKinds()
+  loadHostings()
 })
 
-const tab = usePersistedRef('gateway.settings.tab', 'groups')     // groups | clients | technologies | categories
+// groups | clients | technologies | categories | kinds | hostings
+const tab = usePersistedRef('gateway.settings.tab', 'groups')
 const TABS = computed(() => [
   { value: 'groups', label: `Project groups (${groups.value.length})` },
   { value: 'clients', label: `Clients (${catalog.clients.length})` },
   { value: 'technologies', label: `Technologies (${catalog.technologies.length})` },
   { value: 'categories', label: `Technology categories (${categories.value.length})` },
+  { value: 'kinds', label: `Platform kinds (${kinds.value.length})` },
+  { value: 'hostings', label: `Repository hostings (${hostings.value.length})` },
 ])
 
 const categoryLabel = computed(() =>
@@ -109,6 +134,23 @@ const FORMS = computed(() => ({
     deleteMessage: c => (c.technology_count ? '' : `Delete the category ${c.name}? It has no technologies.`),
     hint: c => (c.technology_count ? `${plural(c.technology_count, 'technology is', 'technologies are')} in it: move them to another category to delete it.` : ''),
   },
+  kind: {
+    endpoint: 'platform-kinds/', noun: 'platform kind',
+    fields: [
+      { key: 'name', label: 'Name' },
+      { key: 'renews_certificates', type: 'checkbox', label: 'Renews its own certificates',
+        help: 'Certbot on the server itself, like a home server or a VPS: the health checks flag a name on a site’s certificate that points elsewhere, because the next renewal would fail. Off where the provider renews them.' },
+    ],
+    defaults: { renews_certificates: false },
+    deleteMessage: k => (k.platform_count ? '' : `Delete the platform kind ${k.name}? No platform is one.`),
+    hint: k => (k.platform_count ? `${plural(k.platform_count, 'platform is', 'platforms are')} ${k.name}: give them another kind to delete it.` : ''),
+  },
+  hosting: {
+    endpoint: 'repository-hostings/', noun: 'repository hosting',
+    fields: [{ key: 'name', label: 'Name' }],
+    deleteMessage: h => (h.repository_count ? '' : `Delete the hosting ${h.name}? No repository is on it.`),
+    hint: h => (h.repository_count ? `${plural(h.repository_count, 'repository is', 'repositories are')} on it: move them to another hosting to delete it.` : ''),
+  },
 }))
 
 // null = closed; { kind, item } to edit, { kind } for a new one.
@@ -120,6 +162,8 @@ async function saved() {
   await catalog.refresh()
   if (kind === 'group') await loadGroups()
   if (kind === 'category' || kind === 'technology') await loadCategories()     // the names, or the counts
+  if (kind === 'kind') await loadKinds()
+  if (kind === 'hosting') await loadHostings()
 }
 </script>
 
@@ -128,7 +172,7 @@ async function saved() {
     <Boxes spaceTopBot>
       <Box :size="100">
         <h1 class="m-0">Settings</h1>
-        <p class="muted-text m-0">The catalog’s lists: the dashboard’s project groups, the clients, the technologies and their categories.</p>
+        <p class="muted-text m-0">The catalog’s lists: the dashboard’s project groups, the clients, the technologies and their categories, the kinds of platform, where repositories are hosted.</p>
       </Box>
 
       <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox/></Box>
@@ -195,7 +239,7 @@ async function saved() {
             <p><Button size="S" @click="editing = { kind: 'technology' }">+ New technology</Button></p>
           </template>
 
-          <template v-else>
+          <template v-else-if="tab === 'categories'">
             <p class="S muted-text">What the technologies are grouped by. Renaming one changes nothing in its technologies.</p>
             <p v-if="categoriesError" class="danger-box S">{{ categoriesError }}</p>
             <p v-if="!categories.length" class="muted-text">No category yet.</p>
@@ -210,6 +254,43 @@ async function saved() {
               </tbody>
             </table>
             <p><Button size="S" @click="editing = { kind: 'category' }">+ New category</Button></p>
+          </template>
+
+          <template v-else-if="tab === 'kinds'">
+            <p class="S muted-text">What each platform is. Renaming one changes nothing in its platforms.</p>
+            <p v-if="kindsError" class="danger-box S">{{ kindsError }}</p>
+            <p v-if="!kinds.length" class="muted-text">No platform kind yet.</p>
+            <table v-else class="data-table S">
+              <thead><tr><th>Kind</th><th>Platforms</th><th></th></tr></thead>
+              <tbody>
+                <tr v-for="k in kinds" :key="k.id">
+                  <td>
+                    <strong>{{ k.name }}</strong>
+                    <span v-if="k.renews_certificates" class="text-box XS ms-05" title="Certbot on the server: the health checks compare the names on its sites’ certificates">renews certificates</span>
+                  </td>
+                  <td>{{ k.platform_count }}</td>
+                  <td class="right"><EditButton :label="`Edit ${k.name}`" @click="editing = { kind: 'kind', item: k }"/></td>
+                </tr>
+              </tbody>
+            </table>
+            <p><Button size="S" @click="editing = { kind: 'kind' }">+ New platform kind</Button></p>
+          </template>
+
+          <template v-else>
+            <p class="S muted-text">Where repositories are hosted. Renaming one changes nothing in its repositories. The GitHub sync puts the repositories it finds in GitHub, and makes that entry again if it’s gone.</p>
+            <p v-if="hostingsError" class="danger-box S">{{ hostingsError }}</p>
+            <p v-if="!hostings.length" class="muted-text">No repository hosting yet.</p>
+            <table v-else class="data-table S">
+              <thead><tr><th>Hosting</th><th>Repositories</th><th></th></tr></thead>
+              <tbody>
+                <tr v-for="h in hostings" :key="h.id">
+                  <td><strong>{{ h.name }}</strong></td>
+                  <td>{{ h.repository_count }}</td>
+                  <td class="right"><EditButton :label="`Edit ${h.name}`" @click="editing = { kind: 'hosting', item: h }"/></td>
+                </tr>
+              </tbody>
+            </table>
+            <p><Button size="S" @click="editing = { kind: 'hosting' }">+ New repository hosting</Button></p>
           </template>
         </Tabs>
       </Box>

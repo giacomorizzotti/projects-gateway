@@ -9,8 +9,8 @@ unit), domains near their expiry, backup jobs and runs (one failed). Every page 
 "needs attention" item has something to show, and nothing comes from the real catalog.
 
 The logins are kept (the users already in the dev database), so you can still sign in; on a
-new database, --user adds yours (your auth-server username). The project groups and technology
-categories are the defaults the migrations create.
+new database, --user adds yours (your auth-server username). The project groups, technology
+categories, platform kinds and repository hostings are the defaults the migrations create.
 
 It refuses to run without DEBUG (production's containers force it off) and when the settings
 point at the live database (data/gateway.sqlite3). For a snapshot of the real catalog instead,
@@ -91,9 +91,12 @@ class Command(BaseCommand):
                 f'{BackupJob.objects.count()} backup jobs. Users: {", ".join(u[0] for u in users)}.'))
 
     def defaults(self):
-        """The groups and categories a fresh database gets from its migrations (flush emptied them)."""
+        """The groups, categories, platform kinds and repository hostings a fresh database gets
+        from its migrations (flush emptied them)."""
         importlib.import_module('catalog.migrations.0005_project_groups').create_groups(apps, None)
         importlib.import_module('catalog.migrations.0007_technology_categories').create_categories(apps, None)
+        importlib.import_module('catalog.migrations.0008_platform_kinds').create_kinds(apps, None)
+        importlib.import_module('catalog.migrations.0009_repository_hostings').create_hostings(apps, None)
 
     def checks(self, now):
         """A run that just finished: everything up for a week, but for a few."""

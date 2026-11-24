@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
-from catalog.models import Environment, Platform, Project
+from catalog.models import Environment, Platform, PlatformKind, Project
 from . import attention, checks, local, notify
 from .models import CheckEvent, LocalScan, MonitorState, UrlCheck
 
@@ -335,6 +335,18 @@ class CertificateNamesTests(RunTests):
         with mock.patch.object(checks, 'resolve', return_value=[]):
             checks.run(now=NOW, check=lambda url, **kw: kinds.append(kw['cert_names']) or up())
         self.assertEqual(kinds, [False, False])
+
+    def test_the_kinds_settings_say_where_certificates_are_renewed(self):
+        def cert_names():
+            seen = []
+            with mock.patch.object(checks, 'resolve', return_value=[]):
+                checks.run(now=NOW, check=lambda url, **kw: seen.append(kw['cert_names']) or up())
+            return seen
+        PlatformKind.objects.create(name='Dedicated server', slug='dedicated', renews_certificates=True)
+        Platform.objects.filter(pk=self.platform.pk).update(kind='dedicated')
+        self.assertEqual(cert_names(), [True, True])
+        PlatformKind.objects.filter(slug='dedicated').update(renews_certificates=False)
+        self.assertEqual(cert_names(), [False, False])
 
     def test_other_names_are_resolved_but_not_wildcards(self):
         with mock.patch.object(checks, 'lookup', return_value=(['1.2.3.4'], '')) as lookup, \

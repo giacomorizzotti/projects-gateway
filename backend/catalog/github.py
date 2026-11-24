@@ -16,7 +16,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
-from .models import GitHubProfile, Repository
+from .models import GitHubProfile, Repository, RepositoryHosting
 from .utils import unique_slug
 
 API = 'https://api.github.com'
@@ -134,6 +134,9 @@ def _sync(profile):
 
 def _apply_repos(repos, owner):
     now = timezone.now()
+    # The hosting the repos go in: made again if it was deleted on the Settings page (only
+    # possible while no repo was on it). A renamed one keeps its slug, so it's still found.
+    RepositoryHosting.objects.get_or_create(slug=RepositoryHosting.GITHUB, defaults={'name': 'GitHub'})
     records = list(Repository.objects.all())
     by_id = {r.github_id: r for r in records if r.github_id}
     by_remote = {}
@@ -149,7 +152,7 @@ def _apply_repos(repos, owner):
             repo = Repository(name=gh['name'], slug=unique_slug(Repository, gh['name']),
                               remote_url=gh.get('ssh_url') or '')
             created += 1
-        repo.hosting = Repository.Hosting.GITHUB
+        repo.hosting = RepositoryHosting.GITHUB
         repo.github_id = gh['id']
         repo.github_url = gh.get('html_url') or ''
         repo.github_description = (gh.get('description') or '')[:500]
@@ -168,7 +171,7 @@ def _apply_repos(repos, owner):
 
     # The owner's repos GitHub didn't list. Other owners' repos (upstream clones) aren't judged.
     missing = 0
-    for repo in Repository.objects.filter(hosting=Repository.Hosting.GITHUB).exclude(pk__in=seen):
+    for repo in Repository.objects.filter(hosting=RepositoryHosting.GITHUB).exclude(pk__in=seen):
         key = parse_remote(repo.remote_url)
         is_owners = bool(repo.github_id) or bool(key and key[0] == owner)
         if repo.github_missing != is_owners:

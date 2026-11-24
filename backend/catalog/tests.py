@@ -4,13 +4,14 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from .models import (Dependency, Environment, Platform, Project, ProjectGroup, Repository, Service, Technology,
-                     TechnologyCategory)
+from .models import (Dependency, Environment, Platform, PlatformKind, Project, ProjectGroup, Repository,
+                     RepositoryHosting, Service, Technology, TechnologyCategory)
 
 
 class SeedTests(TestCase):
@@ -260,6 +261,68 @@ class WriteTests(TestCase):
         TechnologyCategory.objects.filter(slug='other').delete()
         self.assertEqual(self.post('/api/technologies/', {'name': 'Spot 2'}).json()['category'], '')
 
+    def test_settings_manage_the_platform_kinds(self):
+        self.assertEqual([k['value'] for k in self.api.get('/api/choices/').json()['platform_kinds']],
+                         ['client_server', 'home_server', 'lan_device', 'shared_hosting', 'third_party', 'vps'])
+        self.assertEqual(set(PlatformKind.objects.filter(renews_certificates=True).values_list('slug', flat=True)),
+                         {'home_server', 'vps'})
+        created = self.post('/api/platform-kinds/', {'name': 'Dedicated server', 'slug': 'ignored',
+                                                     'renews_certificates': True})
+        self.assertEqual(created.status_code, 201, created.content)
+        kind = created.json()
+        self.assertEqual((kind['slug'], kind['renews_certificates'], kind['platform_count']),
+                         ('dedicated-server', True, 0))
+        platform = self.post('/api/platforms/', {'name': 'Box', 'kind': 'dedicated-server'})
+        self.assertEqual(platform.status_code, 201, platform.content)
+        self.assertEqual(platform.json()['kind_label'], 'Dedicated server')
+        self.assertEqual(self.post('/api/platforms/', {'name': 'Lost', 'kind': 'nowhere'}).status_code, 400)
+        with self.assertRaises(ValidationError):          # the import and the admin
+            Platform(name='Lost', slug='lost', kind='nowhere').full_clean()
+
+        # Renamed: the slug, and so the platforms, stay as they are; their label follows.
+        renamed = self.api.patch(f'/api/platform-kinds/{kind["id"]}/', {'name': 'Dedicated', 'slug': 'x'}, format='json')
+        self.assertEqual((renamed.json()['name'], renamed.json()['slug'], renamed.json()['platform_count']),
+                         ('Dedicated', 'dedicated-server', 1))
+        self.assertEqual(self.api.get('/api/platforms/box/').json()['kind_label'], 'Dedicated')
+        self.assertIn({'value': 'dedicated-server', 'label': 'Dedicated'},
+                      self.api.get('/api/choices/').json()['platform_kinds'])
+
+        # Deleted only when unused.
+        refused = self.api.delete(f'/api/platform-kinds/{kind["id"]}/')
+        self.assertEqual(refused.status_code, 400)
+        self.assertIn('1 platform is Dedicated', refused.json()['detail'])
+        self.api.patch('/api/platforms/box/', {'kind': 'vps'}, format='json')
+        self.assertEqual(self.api.delete(f'/api/platform-kinds/{kind["id"]}/').status_code, 204)
+
+    def test_settings_manage_the_repository_hostings(self):
+        self.assertEqual([h['value'] for h in self.api.get('/api/choices/').json()['repository_hostings']],
+                         ['bitbucket', 'github', 'hostinger', 'local'])
+        created = self.post('/api/repository-hostings/', {'name': 'GitLab', 'slug': 'ignored'})
+        self.assertEqual(created.status_code, 201, created.content)
+        hosting = created.json()
+        self.assertEqual((hosting['slug'], hosting['repository_count']), ('gitlab', 0))
+        repo = self.post('/api/repositories/', {'name': 'Lib', 'hosting': 'gitlab'})
+        self.assertEqual(repo.status_code, 201, repo.content)
+        self.assertEqual(repo.json()['hosting_label'], 'GitLab')
+        self.assertEqual(self.post('/api/repositories/', {'name': 'Lost', 'hosting': 'nowhere'}).status_code, 400)
+        self.assertEqual(self.post('/api/repositories/', {'name': 'Plain'}).json()['hosting'], 'local')
+        with self.assertRaises(ValidationError):          # the import and the admin
+            Repository(name='Lost', slug='lost', hosting='nowhere').full_clean()
+
+        # Renamed: the slug, and so the repositories, stay as they are; their label follows.
+        renamed = self.api.patch(f'/api/repository-hostings/{hosting["id"]}/', {'name': 'GitLab.com', 'slug': 'x'},
+                                 format='json')
+        self.assertEqual((renamed.json()['name'], renamed.json()['slug'], renamed.json()['repository_count']),
+                         ('GitLab.com', 'gitlab', 1))
+        self.assertEqual(self.api.get('/api/repositories/lib/').json()['hosting_label'], 'GitLab.com')
+
+        # Deleted only when unused.
+        refused = self.api.delete(f'/api/repository-hostings/{hosting["id"]}/')
+        self.assertEqual(refused.status_code, 400)
+        self.assertIn('1 repository is on GitLab.com', refused.json()['detail'])
+        self.api.patch('/api/repositories/lib/', {'hosting': 'local'}, format='json')
+        self.assertEqual(self.api.delete(f'/api/repository-hostings/{hosting["id"]}/').status_code, 204)
+
     def test_clients_and_technologies_say_what_uses_them(self):
         client = self.post('/api/clients/', {'name': 'ACME'}).json()
         self.assertEqual((client['project_count'], client['domain_count']), (0, 0))
@@ -491,6 +554,18 @@ class GitHubSyncTests(TestCase):
             self.assertEqual(self.sync().json()['result']['created'], 0)
         self.assertEqual(Repository.objects.get(github_id=1).slug, 'rental-shop')
         self.assertFalse(Repository.objects.get(slug='demo-ui').github_missing)
+
+    def test_the_github_hosting_is_found_renamed_and_made_again_if_deleted(self):
+        RepositoryHosting.objects.filter(slug='github').update(name='GitHub (demo)')
+        with self.fake_github([[gh_repo(1, 'rental-shop')]]):
+            self.sync()
+        self.assertEqual(self.api.get('/api/repositories/rental-shop/').json()['hosting_label'], 'GitHub (demo)')
+        # Deleted on the Settings page while no repo was on it: the sync's repos need it back.
+        Repository.objects.all().delete()
+        RepositoryHosting.objects.filter(slug='github').delete()
+        with self.fake_github([[gh_repo(2, 'brand-new')]]):
+            self.assertEqual(self.sync().status_code, 200)
+        self.assertEqual(self.api.get('/api/repositories/brand-new/').json()['hosting_label'], 'GitHub')
 
     def test_token_of_another_account_is_refused(self):
         with self.fake_github([[]], user={**self.USER, 'login': 'intruder'}):

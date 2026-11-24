@@ -7,8 +7,8 @@ from rest_framework.response import Response
 
 from . import github
 from . import serializers as s
-from .models import (Client, Dependency, Environment, Link, Platform, Project, ProjectGroup,
-                     Repository, Service, Technology, TechnologyCategory)
+from .models import (Client, Dependency, Environment, Link, Platform, PlatformKind, Project, ProjectGroup,
+                     Repository, RepositoryHosting, Service, Technology, TechnologyCategory)
 
 
 class ProjectFilter(django_filters.FilterSet):
@@ -104,6 +104,36 @@ class TechnologyCategoryViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
+class PlatformKindViewSet(viewsets.ModelViewSet):
+    """The platforms' kinds (Settings page). One with platforms can't be deleted: they'd be left
+    with a kind that doesn't exist."""
+    queryset = PlatformKind.objects.all()
+    serializer_class = s.PlatformKindSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        kind = self.get_object()
+        used = Platform.objects.filter(kind=kind.slug).count()
+        if used:
+            return Response({'detail': f'{used} platform{"s are" if used != 1 else " is"} {kind.name}: '
+                                       'give them another kind first.'}, status=status.HTTP_400_BAD_REQUEST)
+        return super().destroy(request, *args, **kwargs)
+
+
+class RepositoryHostingViewSet(viewsets.ModelViewSet):
+    """Where repositories are hosted (Settings page). One with repositories can't be deleted:
+    they'd be left with a hosting that doesn't exist."""
+    queryset = RepositoryHosting.objects.all()
+    serializer_class = s.RepositoryHostingSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        hosting = self.get_object()
+        used = Repository.objects.filter(hosting=hosting.slug).count()
+        if used:
+            return Response({'detail': f'{used} repositor{"ies are" if used != 1 else "y is"} on {hosting.name}: '
+                                       'move them to another hosting first.'}, status=status.HTTP_400_BAD_REQUEST)
+        return super().destroy(request, *args, **kwargs)
+
+
 class DependencyViewSet(viewsets.ModelViewSet):
     queryset = Dependency.objects.select_related('project', 'depends_on', 'environment')
     serializer_class = s.DependencySerializer
@@ -153,16 +183,17 @@ class LinkViewSet(viewsets.ModelViewSet):
 
 @api_view(['GET'])
 def choices(request):
-    """The value lists (groups, statuses, kinds…), for the frontend's labels and forms. Groups and
-    technology categories come from the database (Settings page); the others are fixed in the code."""
+    """The value lists (groups, statuses, kinds…), for the frontend's labels and forms. Groups,
+    platform kinds, repository hostings and technology categories come from the database (Settings
+    page); the others are fixed in the code."""
     def opts(enum):
         return [{'value': v, 'label': label} for v, label in enum.choices]
     return Response({
         'project_groups': [{'value': g.slug, 'label': g.name, 'hidden': g.hidden} for g in ProjectGroup.objects.all()],
         'project_statuses': opts(Project.Status),
-        'platform_kinds': opts(Platform.Kind),
+        'platform_kinds': [{'value': k.slug, 'label': k.name} for k in PlatformKind.objects.all()],
         'environment_kinds': opts(Environment.Kind),
-        'repository_hostings': opts(Repository.Hosting),
+        'repository_hostings': [{'value': h.slug, 'label': h.name} for h in RepositoryHosting.objects.all()],
         'technology_categories': [{'value': c.slug, 'label': c.name} for c in TechnologyCategory.objects.all()],
         'dependency_kinds': opts(Dependency.Kind),
         'dependency_vias': opts(Dependency.Via),

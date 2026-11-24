@@ -10,7 +10,7 @@ It's made for one person or a small studio with dozens of sites spread over a ho
 
 - **Projects**, in groups you define (the dashboard's sections). Each has a client, a status (active, in development, maintenance, discontinued, archived), a one-line description and Markdown notes.
 - **Environments**: a project's PROD, TEST, DEV or local copies. Each has its URLs, the platform it runs on, the path there, its runtime, how it's deployed, and whether it's health-checked.
-- **Platforms**: where things run. A home server, a VPS, shared hosting, a client's server, a LAN device or third-party hosting, each with its provider, IPv4 and IPv6 addresses (or a dynamic DNS name), hostnames, OS, admin links and cleanup notes. A platform's page shows every project on it: what breaks if it goes down.
+- **Platforms**: where things run. A home server, a VPS, shared hosting, a client's server, a LAN device, third-party hosting or any kind you add, each with its provider, IPv4 and IPv6 addresses (or a dynamic DNS name), hostnames, OS, admin links and cleanup notes. A platform's page shows every project on it: what breaks if it goes down.
 - **Repositories** on GitHub, Bitbucket, a host's deploy remote, or local only, each linked to one or more projects.
 - **Dependencies** between projects, such as a site using a UI library or an app logging in through an auth server. Each records *how* it's included: a CDN link at a version, a symlink, a build from source, a git clone, a copy or a package. That decides how a change reaches it: at once, at the next build, or only by hand. The dashboard draws them as a tree, with "live", "manual" and "pinned" badges.
 - **Technologies** (in categories you define), **services** (the outside accounts projects use: payments, privacy, SMTP, registrars, DNS), **domains** and **clients**.
@@ -20,7 +20,7 @@ The dashboard shows a card per project: search by name, client, URL, technology 
 ### Live status
 
 - **Health checks**: every public URL, every 15 minutes. A failed request is retried twice. If it still fails, the URL is only marked *failing* and nothing is sent. Five minutes later it's checked again, together with up to three sites that are up on other platforms. It goes *down*, dated from the first failure, only if it fails again while one of those answers. If none answers, the trouble is the gateway's own connection, so nothing is decided. This keeps short DNS or network drops from turning into alerts.
-- **Certificates and DNS**: each check also reads the certificate (its expiry and the names it covers), and compares the DNS answer with the platform's addresses, per address family. On a server that renews its own certificates, a name on the certificate that points elsewhere is flagged, because the next renewal would fail.
+- **Certificates and DNS**: each check also reads the certificate (its expiry and the names it covers), and compares the DNS answer with the platform's addresses, per address family. On a server that renews its own certificates (a platform kind marked so in Settings: home servers and VPSes by default), a name on the certificate that points elsewhere is flagged, because the next renewal would fail.
 - **Domains**: the registry is asked once a day (RDAP, and WHOIS for `.it`). Expiry is a warning under 30 days and red under 7, unless the domain renews automatically. Only dates, registrar, nameservers and status are kept, never WHOIS contacts. The page suggests the registered domains it finds in your URLs, and links each domain's registrar and DNS host to their services.
 - **GitHub sync**: read-only, every 6 hours, for the repositories of one owner (visibility, language, topics, last push). A repository no project uses, or one deleted on GitHub, needs attention.
 - **Host scan** (optional): a script on the server, run from cron, writes a JSON snapshot that the worker reads. It covers:
@@ -42,7 +42,7 @@ A planner in the gateway, and an agent on each server.
 
 ### Also
 
-- **Settings**: project groups (order, hidden from the dashboard), technology categories, clients and technologies. Each can be renamed, and deleted once nothing uses it.
+- **Settings**: project groups (order, hidden from the dashboard), technology categories, clients, technologies, platform kinds (and whether a kind's servers renew their own certificates) and repository hostings. Each can be renamed, and deleted once nothing uses it.
 - **Installable as an app** (a PWA manifest). There's no service worker, because nothing is useful offline behind a login.
 
 ## Design choices

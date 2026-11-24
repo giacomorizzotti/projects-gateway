@@ -21,6 +21,12 @@ const catalog = useCatalogStore()
 const form = useForm(['name', 'slug', 'hosting', 'remote_url', 'local_path', 'private', 'projects', 'notes'])
 const data = reactive({})
 
+// A new repository is on GitHub, while that hosting exists (Settings page); otherwise the first.
+function defaultHosting() {
+  const hostings = catalog.choices?.repository_hostings || []
+  return (hostings.find(h => h.value === 'github') || hostings[0])?.value ?? ''
+}
+
 watch(() => props.visible, (visible) => {
   if (!visible) return
   form.reset()
@@ -28,7 +34,7 @@ watch(() => props.visible, (visible) => {
   Object.assign(data, {
     name: r?.name ?? '',
     slug: r?.slug ?? '',
-    hosting: r?.hosting ?? 'github',
+    hosting: r?.hosting ?? defaultHosting(),
     remote_url: r?.remote_url ?? '',
     local_path: r?.local_path ?? '',
     private: r?.private ?? true,

@@ -30,7 +30,7 @@ import urllib3.util.connection
 from django.db import transaction
 from django.utils import timezone
 
-from catalog.models import Environment, Platform, Project, ProjectGroup
+from catalog.models import Environment, PlatformKind, Project, ProjectGroup
 from .models import CheckEvent, MonitorState, UrlCheck
 
 log = logging.getLogger('gateway.checks')
@@ -297,13 +297,11 @@ def targets():
     return [(env, url) for env in envs for url in env.urls]
 
 
-# Where certificates are renewed on the server itself (certbot over HTTP), so every name on
-# one must point there. Elsewhere the provider renews them, by its own means.
-SELF_RENEWED = [Platform.Kind.HOME_SERVER, Platform.Kind.VPS]
-
-
-def renews_here(platform):
-    return platform is not None and platform.kind in SELF_RENEWED
+def self_renewed_kinds():
+    """The platform kinds whose servers renew their certificates themselves (certbot over HTTP),
+    so every name on one must point there; Settings page, `PlatformKind.renews_certificates`.
+    Elsewhere the provider renews them, by its own means."""
+    return set(PlatformKind.objects.filter(renews_certificates=True).values_list('slug', flat=True))
 
 
 def run(now=None, check=check_url, only=None, controls=frozenset()):
@@ -318,8 +316,13 @@ def run(now=None, check=check_url, only=None, controls=frozenset()):
     pairs = targets()
     if partial:
         pairs = [(env, url) for env, url in pairs if (env.id, url) in only]
+    renewed = self_renewed_kinds()      # read here: the pool's threads don't query the database
+
+    def renews_here(env):
+        return env.platform is not None and env.platform.kind in renewed
+
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        outcomes = list(pool.map(lambda pair: check(pair[1], cert_names=renews_here(pair[0].platform)), pairs))
+        outcomes = list(pool.map(lambda pair: check(pair[1], cert_names=renews_here(pair[0])), pairs))
     now = now or timezone.now()
     state = MonitorState.get()
 

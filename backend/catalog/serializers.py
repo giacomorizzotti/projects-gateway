@@ -9,8 +9,8 @@ from django.core.validators import URLValidator
 from django.db.models import Max
 from rest_framework import serializers
 
-from .models import (Client, Dependency, Environment, Link, Platform, Project, ProjectGroup, Repository,
-                     Service, Technology, TechnologyCategory)
+from .models import (Client, Dependency, Environment, Link, Platform, PlatformKind, Project, ProjectGroup,
+                     Repository, RepositoryHosting, Service, Technology, TechnologyCategory)
 from .utils import unique_slug
 
 
@@ -67,6 +67,15 @@ def _count(obj, name, related):
     return getattr(obj, related).count() if value is None else value
 
 
+def _label(serializer, model, slug):
+    """The name of a Settings list's entry (a platform kind, a repository hosting), by slug. The
+    names are read once per response (kept on the root serializer), not once per object."""
+    names = serializer.root.__dict__.setdefault('_list_names', {})
+    if model not in names:
+        names[model] = dict(model.objects.values_list('slug', 'name'))
+    return names[model].get(slug, slug)
+
+
 class ClientSerializer(AutoSlugMixin, serializers.ModelSerializer):
     # What deleting one changes: those projects and domains are left with no client.
     project_count = serializers.SerializerMethodField()
@@ -119,6 +128,40 @@ class TechnologyCategorySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data['slug'] = unique_slug(TechnologyCategory, validated_data['name'])
+        return super().create(validated_data)
+
+
+class PlatformKindSerializer(serializers.ModelSerializer):
+    """The slug is made from the first name and then never changes: platforms keep it."""
+    platform_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PlatformKind
+        fields = ['id', 'name', 'slug', 'renews_certificates', 'platform_count']
+        read_only_fields = ['slug']
+
+    def get_platform_count(self, obj):
+        return Platform.objects.filter(kind=obj.slug).count()
+
+    def create(self, validated_data):
+        validated_data['slug'] = unique_slug(PlatformKind, validated_data['name'])
+        return super().create(validated_data)
+
+
+class RepositoryHostingSerializer(serializers.ModelSerializer):
+    """The slug is made from the first name and then never changes: repositories keep it."""
+    repository_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RepositoryHosting
+        fields = ['id', 'name', 'slug', 'repository_count']
+        read_only_fields = ['slug']
+
+    def get_repository_count(self, obj):
+        return Repository.objects.filter(hosting=obj.slug).count()
+
+    def create(self, validated_data):
+        validated_data['slug'] = unique_slug(RepositoryHosting, validated_data['name'])
         return super().create(validated_data)
 
 
@@ -280,7 +323,7 @@ class ProjectDetailSerializer(ProjectSerializer):
 
 
 class PlatformSerializer(AutoSlugMixin, serializers.ModelSerializer):
-    kind_label = serializers.CharField(source='get_kind_display', read_only=True)
+    kind_label = serializers.SerializerMethodField()
     links = LinkSerializer(many=True, read_only=True)
     environment_count = serializers.IntegerField(source='environments.count', read_only=True)
 
@@ -289,6 +332,14 @@ class PlatformSerializer(AutoSlugMixin, serializers.ModelSerializer):
         fields = ['id', 'slug', 'name', 'kind', 'kind_label', 'provider', 'location', 'public_ips',
                   'dynamic_dns', 'hostnames', 'os', 'notes', 'cleanup_notes', 'links',
                   'environment_count']
+
+    def get_kind_label(self, obj):
+        return _label(self, PlatformKind, obj.kind)
+
+    def validate_kind(self, value):
+        if not PlatformKind.objects.filter(slug=value).exists():
+            raise serializers.ValidationError('No such kind: add it on the Settings page first.')
+        return value
 
     def validate_public_ips(self, value):
         # Addresses, or networks for a CDN in front (the health checks' DNS comparison).
@@ -312,8 +363,16 @@ class PlatformDetailSerializer(PlatformSerializer):
 
 
 class RepositorySerializer(AutoSlugMixin, serializers.ModelSerializer):
-    hosting_label = serializers.CharField(source='get_hosting_display', read_only=True)
+    hosting_label = serializers.SerializerMethodField()
     project_details = ProjectBriefSerializer(source='projects', many=True, read_only=True)
+
+    def get_hosting_label(self, obj):
+        return _label(self, RepositoryHosting, obj.hosting)
+
+    def validate_hosting(self, value):
+        if not RepositoryHosting.objects.filter(slug=value).exists():
+            raise serializers.ValidationError('No such hosting: add it on the Settings page first.')
+        return value
 
     class Meta:
         model = Repository

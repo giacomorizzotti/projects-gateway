@@ -21,6 +21,12 @@ const form = useForm(['name', 'slug', 'kind', 'provider', 'location', 'os', 'dyn
   'public_ips', 'hostnames', 'notes', 'cleanup_notes'])
 const data = reactive({})
 
+// A new platform is a VPS, while that kind exists (Settings page); otherwise the first kind.
+function defaultKind() {
+  const kinds = catalog.choices?.platform_kinds || []
+  return (kinds.find(k => k.value === 'vps') || kinds[0])?.value ?? ''
+}
+
 watch(() => props.visible, (visible) => {
   if (!visible) return
   form.reset()
@@ -28,7 +34,7 @@ watch(() => props.visible, (visible) => {
   Object.assign(data, {
     name: p?.name ?? '',
     slug: p?.slug ?? '',
-    kind: p?.kind ?? 'vps',
+    kind: p?.kind ?? defaultKind(),
     provider: p?.provider ?? '',
     location: p?.location ?? '',
     os: p?.os ?? '',

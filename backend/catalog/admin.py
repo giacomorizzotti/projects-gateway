@@ -1,8 +1,8 @@
 """Django admin: development only (the admin app is installed only when DJANGO_DEBUG=True)."""
 from django.contrib import admin
 
-from .models import (Client, Dependency, Environment, Link, Platform, Project, Repository,
-                     Service, Technology, TechnologyCategory)
+from .models import (Client, Dependency, Environment, Link, Platform, PlatformKind, Project, Repository,
+                     RepositoryHosting, Service, Technology, TechnologyCategory)
 
 
 class EnvironmentInline(admin.TabularInline):
@@ -32,4 +32,5 @@ class RepositoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ['name']}
 
 
-admin.site.register([Client, Technology, TechnologyCategory, Dependency, Service, Link, Environment])
+admin.site.register([Client, Technology, TechnologyCategory, PlatformKind, RepositoryHosting, Dependency, Service,
+                     Link, Environment])
