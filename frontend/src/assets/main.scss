@@ -121,6 +121,12 @@ h1, h2, h3, h4, h5, h6, p, ul li, ol li {
     color: var(--white);
 }
 
+// mini's autocomplete list (Autocomplete, MultiAutocomplete) is white and leaves its options'
+// colour to the page: give them mini's own text colour back.
+.autocomplete-options li {
+    color: var(--black);
+}
+
 // mini has no table styles: a plain, readable data table.
 .data-table {
     width: 100%;
