@@ -30,7 +30,7 @@ function onCreated(platform) {
       <Box :size="100">
         <h1 class="m-0">Platforms</h1>
         <p class="m-0 light-grey-text">Where every environment runs.</p>
-        <CatalogCounts class="mt-05 mb-1"/>
+        <CatalogCounts class="mt-05 mb-15"/>
         <Space/>
         <p class="m-0">
           <Button :disabled="!catalog.choices" @click="creating = true" size="S" class="platform-btn" hard>+ New platform</Button>
@@ -46,7 +46,7 @@ function onCreated(platform) {
           <Box v-for="pl in catalog.platforms" :key="pl.slug" :size="25" padding="0">
             <div class="project-card p-15 platform-border fb-bg" style="border-top: 3px solid;">
               <p class="S mb-05">
-                <span class="dark-grey-box platform-text b-rad-3 XS">{{ pl.kind_label }}</span>
+                <span class="dark-grey-box platform-text XS">{{ pl.kind_label }}</span>
               </p>
               <h4 class="m-0 platform-text">
                 <Server width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-1 platform-text"/>

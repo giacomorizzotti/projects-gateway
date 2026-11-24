@@ -53,7 +53,7 @@ const attention = computed(() => (counts.value.unlinked || 0) + (counts.value.mi
 
 <template>
   <h4 class="light italic grey-text h5">GitHub profile</h4>
-  <div class="fb-bg border dark-grey-border p-15 b-rad-10">
+  <div class="fb-bg border dark-grey-border p-15">
     <p v-if="!status && !error" class="muted-text m-0">Loading GitHub…</p>
 
     <template v-if="status">

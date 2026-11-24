@@ -333,7 +333,7 @@ function nameState(n) {
               <tr v-for="e in events" :key="e.id">
                 <td class="nowrap">{{ formatDateTime(e.at) }}</td>
                 <td>
-                  <span :class="[e.state === 'down' ? 'danger-bg' : 'success-bg', 'flag border-0 b-rad-3 p-05']">{{ e.state === 'down' ? 'went down' : 'came back' }}</span>
+                  <span :class="[e.state === 'down' ? 'danger-bg' : 'success-bg', 'flag border-0 p-05']">{{ e.state === 'down' ? 'went down' : 'came back' }}</span>
                 </td>
                 <td>
                   <RouterLink :to="{ name: 'project', params: { slug: e.project.slug } }">{{ e.project.name }}</RouterLink>

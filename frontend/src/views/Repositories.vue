@@ -60,8 +60,8 @@ const editing = ref(null)
     <Boxes spaceTop class="align-items-end">
       <Box :size="75">
         <h1 class="m-0">Repositories</h1>
-        <p class="light-grey-text m-0">Git repos on GitHub, Bitbucket, hosting deploy remotes, and local-only ones.</p>
-        <CatalogCounts class="mt-05 mb-1"/>
+        <p class="light-grey-text mt-0">Git repos on GitHub, Bitbucket, hosting deploy remotes, and local-only ones.</p>
+        <CatalogCounts class="mt-05 mb-15"/>
         <Space/>
         <p class="m-0">
           <Button :disabled="!catalog.choices" @click="editing = {}" size="S" class="repository-btn" hard>+ New repository</Button>
@@ -106,12 +106,12 @@ const editing = ref(null)
                 <EditButton :label="`Edit ${r.name}`" @click="editing = r" class="ms-05"/>
               </div>
               <p class="mt-0 mb-1 flex flex-wrap g-0 XS">
-                <span class="repository-box border-0 b-rad-3 p-05 white-text me-05 mb-05">{{ r.hosting_label }}</span>
-                <span v-if="!r.private" class="dark-grey-box border info-border b-rad-3 p-05 me-05 mb-05">public</span>
-                <span v-if="r.archived" class="grey-box border light-grey-border b-rad-3 p-05 me-05 mb-05">archived</span>
-                <span v-if="r.fork" class="dark-grey-box border info-border b-rad-3 p-05 me-05 mb-05">fork</span>
-                <span v-if="needsProject(r)" class="dark-grey-box border warning-border b-rad-3 p-05 me-05 mb-05">no project</span>
-                <span v-if="r.github_missing" class="flag danger-bg border-0 b-rad-3 p-05 me-05 mb-05">not found on GitHub</span>
+                <span class="repository-box border-0 p-05 white-text me-05 mb-05">{{ r.hosting_label }}</span>
+                <span v-if="!r.private" class="dark-grey-box border info-border p-05 me-05 mb-05">public</span>
+                <span v-if="r.archived" class="grey-box border light-grey-border p-05 me-05 mb-05">archived</span>
+                <span v-if="r.fork" class="dark-grey-box border info-border p-05 me-05 mb-05">fork</span>
+                <span v-if="needsProject(r)" class="dark-grey-box border warning-border p-05 me-05 mb-05">no project</span>
+                <span v-if="r.github_missing" class="flag danger-bg border-0 p-05 me-05 mb-05">not found on GitHub</span>
               </p>
               <p v-if="r.github_description" class="S m-0">{{ r.github_description }}</p>
               <p v-if="r.language || r.pushed_at" class="muted-text XS m-0">

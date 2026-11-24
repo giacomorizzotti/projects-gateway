@@ -105,7 +105,7 @@ function saved() {
     <Boxes spaceTopBot>
       <Box :size="100">
         <h1 class="m-0">Backups</h1>
-        <p class="light-grey-text m-0">
+        <p class="light-grey-text mt-0">
           What is backed up, when and where to. An agent on each platform runs its jobs (from its crontab, every 15 minutes):
           each backup is made in its first target, checked, then copied to the others.
         </p>

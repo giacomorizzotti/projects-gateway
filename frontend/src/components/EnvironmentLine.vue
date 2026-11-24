@@ -21,7 +21,7 @@ const checks = computed(() => status.byEnvironment[props.env.id] || [])
 
 <template>
   <span class="wrap-anywhere flex g-0 align-items-center">
-    <span :class="[envClass(env.kind), 'XS b-rad-5 me-05 mb-025']">{{ label }}</span>
+    <span :class="[envClass(env.kind), 'XS me-05 mb-025']">{{ label }}</span>
   </span>
   <span class="wrap-anywhere flex g-0 align-items-center">
     <StatusDot v-if="checks.length" :checks="checks" class="me-05"/>
@@ -29,7 +29,7 @@ const checks = computed(() => status.byEnvironment[props.env.id] || [])
     <span v-else-if="env.path" class="muted-text S">{{ env.path }}</span>
     <span v-if="extraUrls" class="muted-text S"> +{{ extraUrls }}</span>
   </span>
-  <span v-if="showPlatform && env.platform_detail" class="platform-bg py-025 px-075 lh-1 mt-075 inline-block b-rad-5">
+  <span v-if="showPlatform && env.platform_detail" class="platform-bg py-025 px-075 lh-1 mt-075 inline-block">
     <RouterLink :to="{ name: 'platform', params: { slug: env.platform_detail.slug } }" class="S italic white-text ">
       <Server width="14" height="14" aria-hidden="true" style="vertical-align: -2px" class="me-05"/>
       {{ env.platform_detail.name }}

@@ -92,7 +92,7 @@ const hosted = computed(() => {
           <div v-if="platform.notes" class="mt-1 false-black-bg white-text p-15">
             <RichText :text="platform.notes"/>
           </div>
-          <div v-if="platform.cleanup_notes" class="mt-15 p-1 border warning-border b-rad-5">
+          <div v-if="platform.cleanup_notes" class="mt-15 p-1 border warning-border">
             <h4 class="mb-05 warning-text">Cleanup</h4>
             <RichText :text="platform.cleanup_notes" class=" S"/>
           </div>
@@ -115,7 +115,7 @@ const hosted = computed(() => {
         </Box>
 
         <Box :size="100">
-          <h3 class="m-0">Hosted here <span class="flag regular light-grey-border b-rad-3">{{ hosted.length }} projects</span></h3>
+          <h3 class="m-0">Hosted here <span class="flag regular light-grey-border">{{ hosted.length }} projects</span></h3>
           <p v-if="!hosted.length" class="light-grey-text">Nothing recorded on this platform.</p>
         </Box>
         <Box :size="100" class="p-y">

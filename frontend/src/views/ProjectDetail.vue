@@ -92,8 +92,8 @@ function onChildSaved() {
               <span class="dark-grey-box XS me-05">{{ project.group_label }}</span>
               <span :class="[statusBoxClass(project.status) || 'success-box', 'XS me-05']">{{ project.status_label }}</span>
             </p>
-            <p v-if="project.description" class="L mt-0 mb-15">{{ project.description }}</p>
-            <div v-if="project.notes" class="dark-grey-bg p-15 mb-2">
+            <p v-if="project.description" class="white-text L mt-0 mb-15">{{ project.description }}</p>
+            <div v-if="project.notes" class="white-text dark-grey-bg p-15 mb-2">
               <MarkdownText :text="project.notes" :markdown="project.notes_markdown" class=""/>
             </div>
             <p class="m-0">
@@ -150,8 +150,8 @@ function onChildSaved() {
                 <RouterLink :to="{ name: 'repositories' }" class="bold repository-text">
                   <Repository width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05"/>{{ repo.name }}
                 </RouterLink>
-                <span class="flag repository-bg b-rad-3 white-text XS ms-05">{{ repo.hosting }}</span>
-                <span v-if="repo.archived" class="flag light-grey-bg border-0 b-rad-3 p-05 ms-05">archived</span>
+                <span class="flag repository-bg white-text XS ms-05">{{ repo.hosting }}</span>
+                <span v-if="repo.archived" class="flag light-grey-bg border-0 p-05 ms-05">archived</span>
                 <div class="S">
                   <a v-if="repo.github_url" :href="repo.github_url" target="_blank" rel="noopener noreferrer" class="repository-text">{{ repo.github_url }}</a>
                   <code v-else-if="repo.remote_url">{{ repo.remote_url }}</code>

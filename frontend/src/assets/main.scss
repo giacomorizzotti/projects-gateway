@@ -34,10 +34,10 @@
 $entities: (
     project:    #33c493     var(--on-color)       #33c493,
     platform:   #e78ba5     var(--on-light-color) #e78ba5,
-    repository: #9999e6     var(--on-color)       #9999e6,
+    domain:     #7db7ff     var(--on-light-color) #7db7ff,
+    repository: #9e9efa     var(--on-color)       #9e9efa,
     technology: #90bacb     var(--on-color)       #90bacb,
     service:    #a0bd37     var(--on-color)       #a0bd37,
-    domain:     #92ea6c     var(--on-light-color) #92ea6c,
     backup:     #fa9570     var(--on-light-color) #fa9570,
     // Environments, by kind (utils/format.js envColor).
     env-prod:   var(--success)      var(--on-light-color) var(--success),

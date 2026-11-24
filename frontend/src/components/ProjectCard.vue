@@ -39,7 +39,7 @@ const detailsLabel = computed(() =>
         <h4 class="m-0">
           <Folder width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05 project-text"/>
           {{ project.name }}
-          <span v-if="statusClass(project.status)" :class="[statusClass(project.status), 'flag border-0 b-rad-3 regular p-05 ms-05']">{{ project.status_label }}</span>
+          <span v-if="statusClass(project.status)" :class="[statusClass(project.status), 'flag border-0 regular p-05 ms-05']">{{ project.status_label }}</span>
         </h4>
       </RouterLink>
     </div>
