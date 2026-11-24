@@ -18,7 +18,7 @@ function retry() {
   <Sheet>
     <Main class="black-bg">
       <Container>
-        <Boxes spaceTopBot fh class="align-content-start">
+        <Boxes spaceBot fh class="align-content-start">
           <Box :size="100">
             <Space height="2"/>
             <h1 class="m-0">Sign in</h1>

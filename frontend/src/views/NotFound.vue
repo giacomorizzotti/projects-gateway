@@ -6,7 +6,7 @@ import Box from '@/mini/components/Box.vue'
 
 <template>
   <Container>
-    <Boxes spaceTopBot>
+    <Boxes spaceBot>
       <Box :size="100">
         <h1>Not found</h1>
         <p>There’s nothing at this address.</p>

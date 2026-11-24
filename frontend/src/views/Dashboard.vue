@@ -84,7 +84,7 @@ function clearFilters() {
 
 <template>
   <Container>
-    <Boxes spaceTop class="">
+    <Boxes class="">
       <Box :size="100">
         <h1 class="mb-0">Projects</h1>
         <CatalogCounts class="mt-05 mb-15"/>

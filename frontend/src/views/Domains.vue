@@ -51,7 +51,7 @@ function saved() {
 
 <template>
   <Container>
-    <Boxes spaceTopBot>
+    <Boxes spaceBot>
       <Box :size="100">
         <h1 class="m-0">Domains</h1>
         <p class="light-grey-text mt-0">

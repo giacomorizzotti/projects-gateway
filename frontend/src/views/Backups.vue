@@ -102,7 +102,7 @@ function saved() {
 
 <template>
   <Container>
-    <Boxes spaceTopBot>
+    <Boxes>
       <Box :size="100">
         <h1 class="m-0">Backups</h1>
         <p class="light-grey-text mt-0">

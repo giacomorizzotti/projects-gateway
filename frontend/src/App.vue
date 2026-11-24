@@ -7,6 +7,7 @@ import HeaderMenu from '@/mini/components/HeaderMenu.vue'
 import Container from '@/mini/components/Container.vue'
 import Boxes from '@/mini/components/Boxes.vue'
 import Box from '@/mini/components/Box.vue'
+import Space from '@/mini/components/Space.vue'
 import Sheet from '@/mini/components/Sheet.vue'
 import Aside from '@/mini/components/Aside.vue'
 import Main from '@/mini/components/Main.vue'
@@ -87,10 +88,14 @@ function logout() {
           </Boxes>
         </Container>
       </Header>
-      <Main class="black-bg">
+      <Main class="black-bg space-top">
+        <Space/>
         <Container v-if="showStatusBox">
-          <Boxes spaceTop>
-            <Box :size="100" class="py-0"><StatusBox/></Box>
+          <Boxes>
+            <Box :size="100" class="fb-bg">
+              <h3 class="S light grey-text mt-0 mb-05">Status</h3>
+              <StatusBox/>
+            </Box>
           </Boxes>
         </Container>
         <RouterView/>

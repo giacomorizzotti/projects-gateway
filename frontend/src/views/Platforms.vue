@@ -26,7 +26,7 @@ function onCreated(platform) {
 
 <template>
   <Container>
-    <Boxes spaceTop class="align-items-start">
+    <Boxes class="align-items-start">
       <Box :size="100">
         <h1 class="m-0">Platforms</h1>
         <p class="m-0 light-grey-text">Where every environment runs.</p>

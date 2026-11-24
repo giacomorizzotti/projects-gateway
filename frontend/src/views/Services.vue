@@ -42,7 +42,7 @@ const editing = ref(null)
 
 <template>
   <Container>
-    <Boxes spaceTop>
+    <Boxes>
       <Box :size="100">
         <h1 class="mb-0">Services</h1>
         <p class="light-grey-text mt-0">

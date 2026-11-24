@@ -57,7 +57,7 @@ const editing = ref(null)
 
 <template>
   <Container>
-    <Boxes spaceTop class="align-items-end">
+    <Boxes class="align-items-end">
       <Box :size="75">
         <h1 class="m-0">Repositories</h1>
         <p class="light-grey-text mt-0">Git repos on GitHub, Bitbucket, hosting deploy remotes, and local-only ones.</p>

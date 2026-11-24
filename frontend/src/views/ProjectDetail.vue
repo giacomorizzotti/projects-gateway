@@ -77,7 +77,7 @@ function onChildSaved() {
 
 <template>
   <Container>
-    <Boxes spaceTop>
+    <Boxes>
       <Box :size="100">
         <RouterLink :to="{ name: 'dashboard' }"><span class="project-text">← Projects</span></RouterLink>
       </Box>

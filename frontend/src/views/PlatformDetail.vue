@@ -72,7 +72,7 @@ const hosted = computed(() => {
 
 <template>
   <Container>
-    <Boxes spaceTopBot class="align-items-start">
+    <Boxes spaceBot class="align-items-start">
       <Box :size="100">
         <RouterLink :to="{ name: 'platforms' }" class="S platform-text">← Platforms</RouterLink>
       </Box>
