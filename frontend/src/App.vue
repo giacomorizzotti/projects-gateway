@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, watch } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { IconoirProvider } from '@iconoir/vue'
 import Header from '@/mini/components/Header.vue'
 import HeaderMenu from '@/mini/components/HeaderMenu.vue'
@@ -16,13 +16,19 @@ import Top from '@/mini/components/Top.vue'
 import MessageBox from '@/mini/components/MessageBox.vue'
 import { useAuthStore } from '@/mini/stores/auth'
 import { useStatusStore } from '@/stores/status'
+import StatusBox from '@/components/StatusBox.vue'
 import { useDashboardFilters } from '@/composables/useDashboardFilters'
 import { useScrollState } from '@/mini/composables/useScrollState'
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const status = useStatusStore()
+// What needs attention, above every page: not on the Status page, which lists it all, and not
+// signed out (the store keeps its last data after a sign-out).
+const showStatusBox = computed(() =>
+  auth.isAuthenticated && route.name !== 'status' && status.problems.length > 0)
 // The logo goes home to an unfiltered dashboard, even when it's already open.
 const dashboardFilters = useDashboardFilters()
 // 'top' or 'scrolled', as the header's own state: the menu is inverted (white) only at the
@@ -82,6 +88,11 @@ function logout() {
         </Container>
       </Header>
       <Main class="black-bg">
+        <Container v-if="showStatusBox">
+          <Boxes spaceTop>
+            <Box :size="100" class="py-0"><StatusBox/></Box>
+          </Boxes>
+        </Container>
         <RouterView/>
       </Main>
       <Aside side="right">

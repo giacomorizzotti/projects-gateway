@@ -14,17 +14,11 @@ import ProjectTree from '@/components/ProjectTree.vue'
 import ProjectForm from '@/components/forms/ProjectForm.vue'
 import { useCatalogStore } from '@/stores/catalog'
 import CatalogCounts from '@/components/CatalogCounts.vue'
-import { useStatusStore } from '@/stores/status'
 import { byClient, byDependency, byGroup, byPlatform } from '@/utils/trees'
 
 const catalog = useCatalogStore()
 const router = useRouter()
 onMounted(() => catalog.load())
-
-// Loaded and refreshed by App.vue; problems = "needs attention" minus the info-only items.
-const status = useStatusStore()
-const problemsBox = computed(() =>
-  status.problems.some(i => i.severity === 'danger') ? 'danger-box' : 'warning-box')
 
 const creating = ref(false)
 function onCreated(project) {
@@ -96,20 +90,6 @@ function clearFilters() {
         <CatalogCounts class="mt-05 mb-15"/>
         <p class="m-0">
           <Button :disabled="!catalog.choices" @click="creating = true" size="S" class="project-btn m-0" hard>+ New project</Button>
-        </p>
-      </Box>
-    </Boxes>
-
-    <!-- What needs attention, from the Status page: red if anything is, amber otherwise. -->
-    <Boxes v-if="status.problems.length">
-      <Box :size="100" class="py-0">
-        <p class="m-0">
-          <span :class="[problemsBox, 'p-1']">
-            <RouterLink :to="{ name: 'status' }">
-              {{ status.problems.length === 1 ? '1 problem needs' : `${status.problems.length} problems need` }} attention
-            </RouterLink>:
-            {{ status.problems.slice(0, 3).map(i => i.title).join('&nbsp;&nbsp;·&nbsp;&nbsp;') }}<template v-if="status.problems.length > 3"> …</template>
-          </span>
         </p>
       </Box>
     </Boxes>
