@@ -1,0 +1,22 @@
+# Secrets and local data: never in git (the GitHub token and DB live here)
+.env
+.env.*
+!.env.example
+data/
+*.sqlite3
+
+# This deployment's own notes and data (the plan, the real inventory, ops notes): never public
+private/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Frontend
+node_modules/
+dist/
+
+# Editors / OS
+.DS_Store
+.vscode/

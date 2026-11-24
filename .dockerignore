@@ -1,0 +1,12 @@
+# Secrets and data come in at runtime (env_file, the /data volume), never in the image.
+**/.env
+**/.env.*
+!.env.example
+data/
+private/
+.git
+venv/
+**/__pycache__/
+**/*.pyc
+frontend/node_modules/
+frontend/dist/

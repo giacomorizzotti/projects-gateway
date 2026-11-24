@@ -1,0 +1,68 @@
+# Projects Gateway: the app (API + the built frontend) and the worker (background jobs).
+#
+#   docker compose up -d --build
+#
+# The values below marked ${…} come from the repo-root .env (Compose reads it for these, and
+# the containers get the whole file through env_file). See .env.example.
+#
+# A reverse proxy on the host terminates TLS for GATEWAY_HOST and proxies to
+# 127.0.0.1:GATEWAY_PORT (deploy/nginx.example.conf). Published on 127.0.0.1 only: Docker's
+# published ports bypass host firewalls such as UFW.
+#
+# ./data holds the SQLite database: it's the production catalog once this runs. For
+# development, point DATA_DIR in .env at another folder (e.g. data/dev).
+name: projects-gateway
+
+x-gateway: &gateway
+  image: projects-gateway:latest
+  env_file: .env
+  environment:
+    DJANGO_DEBUG: "False"
+    DJANGO_ALLOWED_HOSTS: ${GATEWAY_HOST:?set GATEWAY_HOST in .env}
+    DATA_DIR: /data
+  # The owner of ./data on the host, so the files the containers write stay its own.
+  user: "${GATEWAY_UID:?set GATEWAY_UID in .env}:${GATEWAY_GID:?set GATEWAY_GID in .env}"
+  volumes:
+    - ./data:/data
+  init: true
+  restart: unless-stopped
+  # Public resolvers rather than whatever the host uses: a home router can drop a few percent
+  # of lookups, enough to fail a check's three attempts and report a site as down when only
+  # its name lookup failed.
+  dns: [1.1.1.1, 9.9.9.9]
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+
+services:
+  app:
+    <<: *gateway
+    build:
+      context: .
+      additional_contexts:
+        # A checkout of mini (https://github.com/giacomorizzotti/mini), next to this repo by default.
+        mini: ${MINI_DIR:-../mini}
+      args:
+        VITE_AUTH_SERVER_BASE: ${VITE_AUTH_SERVER_BASE:?set VITE_AUTH_SERVER_BASE in .env}
+        VITE_OAUTH_CLIENT_ID: ${VITE_OAUTH_CLIENT_ID:?set VITE_OAUTH_CLIENT_ID in .env}
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8040}:8000"
+    healthcheck:
+      # With the real Host and proto, so neither ALLOWED_HOSTS nor the HTTPS redirect interferes.
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen(u.Request('http://127.0.0.1:8000/api/health/', headers={'Host': '${GATEWAY_HOST}', 'X-Forwarded-Proto': 'https'}), timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # Background jobs: every 15 minutes (or on "Check now") the health checks, the local scan's
+  # snapshot (data/scan.json) and the notifications; the GitHub sync every 6 hours.
+  worker:
+    <<: *gateway
+    pull_policy: never
+    command: ["python", "manage.py", "worker"]
+    volumes:
+      - ./data:/data
+    depends_on:
+      app:
+        condition: service_healthy

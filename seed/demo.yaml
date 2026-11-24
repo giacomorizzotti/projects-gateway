@@ -1,0 +1,157 @@
+# Invented data for the dev database: `manage.py seed_dev_data` loads it (with import_inventory)
+# and adds live status around it (checks, the host scan, domains, backups). Nothing here is
+# real: the domains end in .example and the addresses are the documentation ranges
+# (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24), so none of them resolves or answers.
+# The home server's slug is home-server: the settings' default SCAN_PLATFORM, the platform
+# the host scan describes. The tests use this catalog too.
+
+clients:
+  - Northwind Bakery
+  - Acme Rentals
+
+technologies:
+  - {name: Python, category: language}
+  - {name: JavaScript, category: language}
+  - {name: PHP, category: language}
+  - {name: Django, category: framework}
+  - {name: Vue, category: framework}
+  - {name: WordPress, category: cms}
+  - {name: MySQL, category: database}
+  - {name: SQLite, category: database}
+  - {name: Docker, category: infra}
+  - {name: nginx, category: infra}
+  - {name: Demo UI kit, category: library}
+
+platforms:
+  - slug: home-server
+    name: Home server
+    kind: home_server
+    provider: Home
+    location: Office
+    dynamic_dns: home.example
+    public_ips: [203.0.113.10]
+    os: Ubuntu 24.04
+    notes: The demo's home server. Its sites go through a dynamic DNS name.
+    links:
+      - {label: Router, url: 'http://192.168.1.1/'}
+  - slug: cloud-vps
+    name: Cloud VPS
+    kind: vps
+    provider: Example Cloud
+    location: Frankfurt
+    public_ips: [198.51.100.20]
+    hostnames: [vps.example]
+    os: Debian 12
+    notes: Docker Compose for the production apps.
+  - slug: shared-hosting
+    name: Shared hosting
+    kind: shared_hosting
+    provider: Example Hosting
+    public_ips: [192.0.2.0/24]
+    notes: The PHP and WordPress sites. Its CDN gives each site an address of its own.
+
+repositories:
+  - {slug: demo-ui, name: demo-ui, hosting: github, remote_url: 'git@github.com:demo/demo-ui.git', local_path: /home/projects/demo/demo-ui}
+  - {slug: rental-shop, name: rental-shop, hosting: github, remote_url: 'git@github.com:demo/rental-shop.git', local_path: /home/projects/demo/rental-shop, private: true}
+  - {slug: northwind-site, name: northwind-site, hosting: local, local_path: /home/projects/demo/northwind-site, notes: Not on GitHub yet.}
+  - {slug: status-board, name: status-board, hosting: github, remote_url: 'git@github.com:demo/status-board.git', local_path: /home/projects/demo/status-board}
+  - {slug: old-blog, name: old-blog, hosting: local, local_path: /home/projects/demo/old-blog}
+  - {slug: uptime-widget, name: uptime-widget, hosting: github, remote_url: 'https://github.com/upstream-dev/uptime-widget.git', local_path: /home/projects/demo/uptime-widget, notes: A clone of an open-source widget.}
+
+projects:
+  - slug: demo-ui
+    name: Demo UI kit
+    group: libraries
+    description: The shared Vue components and styles the other projects use.
+    technologies: [Vue, JavaScript]
+    repositories: [demo-ui]
+    environments:
+      - {name: PROD, kind: prod, urls: ['https://cdn.demo-ui.example/'], platform: cloud-vps, deploy: Tagged releases, served by the CDN.}
+      - {name: Local, kind: local, urls: ['http://localhost:5170/'], checks: false}
+    notes: |
+      **Additive changes only**: some sites load it live.
+
+      - Components are imported one by one.
+      - Releases are tagged `vX.Y.Z`.
+
+  - slug: rental-shop
+    name: Rental shop
+    group: software
+    status: active
+    client: Acme Rentals
+    description: Acme's booking app, with payments and a customer area.
+    technologies: [Django, Vue, MySQL, Docker]
+    repositories: [rental-shop]
+    environments:
+      - {name: PROD, kind: prod, urls: ['https://shop.acme.example/'], platform: cloud-vps, runtime: Docker Compose, deploy: git pull + docker compose up -d --build}
+      - {name: TEST, kind: test, urls: ['https://test.shop.acme.example/'], platform: home-server, runtime: gunicorn + nginx}
+      - {name: Local, kind: local, urls: ['http://localhost:5199/'], checks: false}
+    depends_on:
+      - {project: demo-ui, kind: ui_library, environment: TEST, via: symlink, reference: frontend/src/ui}
+      - {project: demo-ui, kind: ui_library, environment: PROD, via: git, version: v1.4.0}
+      - {project: shop-api, kind: backend, via: api}
+    notes: |
+      ## Deploy
+      1. Merge to `main`.
+      2. Pull and rebuild on the VPS.
+
+      Payments go through [the payment provider](https://pay.example/).
+
+  - slug: shop-api
+    name: Shop API
+    group: api
+    client: Acme Rentals
+    description: The rental shop's public API.
+    technologies: [Django, Python]
+    repositories: [rental-shop]
+    environments:
+      - {name: PROD, kind: prod, urls: ['https://api.shop.acme.example/'], platform: cloud-vps}
+
+  - slug: northwind-site
+    name: Northwind Bakery website
+    group: websites
+    client: Northwind Bakery
+    description: The bakery's WordPress site, with the weekly menu.
+    technologies: [WordPress, PHP, MySQL]
+    repositories: [northwind-site]
+    environments:
+      - {name: PROD, kind: prod, urls: ['https://www.northwind.example/'], platform: shared-hosting}
+      - {name: DEV, kind: dev, urls: ['https://dev.home.example/northwind/'], platform: home-server}
+    depends_on:
+      - {project: demo-ui, kind: ui_library, via: cdn, version: 1.4.0}
+
+  - slug: status-board
+    name: Status board
+    group: tools
+    status: development
+    description: A small page with the office's printers and network.
+    technologies: [Python, SQLite]
+    repositories: [status-board, uptime-widget]
+    environments:
+      - {name: PROD, kind: prod, urls: ['https://status.home.example/'], platform: home-server}
+      - {name: DEV, kind: dev, urls: ['https://dev.home.example/status/'], platform: home-server}
+
+  - slug: newsletter-2025
+    name: Spring newsletter 2025
+    group: campaigns
+    status: discontinued
+    client: Northwind Bakery
+    description: A one-off campaign page.
+    environments:
+      - {name: PROD, kind: prod, urls: ['https://spring.northwind.example/'], platform: shared-hosting, checks: false}
+
+  - slug: old-blog
+    name: Old blog
+    group: archive
+    status: archived
+    description: Kept for the record.
+    technologies: [PHP]
+    repositories: [old-blog]
+
+services:
+  - {slug: example-hosting, name: Example Hosting, kind: Hosting, url: 'https://hosting.example/', account: admin@northwind.example, projects: [northwind-site, newsletter-2025]}
+  - {slug: example-cloud, name: Example Cloud, kind: Hosting, url: 'https://cloud.example/', account: ops team, projects: [rental-shop, shop-api, demo-ui]}
+  - {slug: example-registrar, name: Example Registrar, kind: Domains, url: 'https://registrar.example/', account: domains@acme.example}
+  - {slug: pay-demo, name: Pay Demo, kind: Payments, url: 'https://pay.example/', account: Acme Rentals (live and sandbox), projects: [rental-shop], notes: "Webhooks go to the API.\nSandbox keys only in TEST."}
+  - {slug: mailer-smtp, name: Mailer SMTP, kind: Email, url: 'https://mailer.example/', account: no-reply@acme.example, projects: [rental-shop, status-board]}
+  - {slug: cookie-banner, name: Cookie Banner Co, kind: GDPR and cookies, url: 'https://cookies.example/', account: Northwind Bakery, projects: [northwind-site]}

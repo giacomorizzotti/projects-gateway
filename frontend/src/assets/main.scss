@@ -1,0 +1,222 @@
+// mini, compiled from source (loadPaths in vite.config.js).
+@use 'mini';
+@use 'sass:list';
+
+:root {
+    --main-color: #867eff;
+    --main-color-dark: #262353;
+    --second-color: #7e9eff;
+    --second-color-dark: #3f528a;
+    --link-color: #867eff;
+    --link-hover-color: #645fa5;
+    --logo-height: 2rem;
+    --scroll-logo-height: 1.5rem;
+    --title-font: var(--font-mono);
+    --sheet: var(--false-black);
+    --info: #5bc7d5;
+    --info-dark: #5bc7d5;
+    --success: #adde59;
+    --success-dark: #adde59;
+    --warning: #ecad54;
+    --warning-dark: #ecad54;
+    --danger: #de6259;
+    --danger-dark: #de6259;
+}
+
+// One colour per kind of thing, the same on every page. Recolour here and everything follows.
+// For each name: its fill, the text on that fill, and the colour as text on the dark page
+// and cards. mini runs in light mode here, so its own -text shades are made for white
+// backgrounds (its teal and purple are under 3:1 on the cards); the text column uses mini's
+// dark-mode shades instead, about 6:1.
+// Each name gives --name, --on-name and --name-text, and the classes .name-text, .name-bg,
+// .name-border, .name-box (mini's text-box shape) and .name-btn for buttons. The dashboard
+// tree takes a name as its tone.
+$entities: (
+    project:    #33c493     var(--on-color)       #33c493,
+    platform:   #e78ba5     var(--on-light-color) #e78ba5,
+    repository: #9999e6     var(--on-color)       #9999e6,
+    technology: #90bacb     var(--on-color)       #90bacb,
+    service:    #a0bd37     var(--on-color)       #a0bd37,
+    domain:     #92ea6c     var(--on-light-color) #92ea6c,
+    backup:     #fa9570     var(--on-light-color) #fa9570,
+    // Environments, by kind (utils/format.js envColor).
+    env-prod:   var(--success)      var(--on-light-color) var(--success),
+    env-test:   var(--warning)      var(--on-light-color) var(--warning),
+    env-dev:    var(--info)         var(--on-light-color) var(--info),
+    env-local:  var(--light-grey)   var(--on-light-color) var(--light-grey),
+    env-other:  var(--light-grey)   var(--on-light-color) var(--light-grey),
+);
+
+:root {
+    @each $name, $c in $entities {
+        --#{$name}: #{list.nth($c, 1)};
+        --on-#{$name}: #{list.nth($c, 2)};
+        --#{$name}-text: #{list.nth($c, 3)};
+    }
+}
+
+// !important like mini's own colour classes, so they stand in for them one for one.
+@each $name, $c in $entities {
+    .#{$name}-text {
+        color: var(--#{$name}-text) !important;
+    }
+    .#{$name}-bg {
+        background-color: var(--#{$name}) !important;
+        color: var(--on-#{$name});
+    }
+    .#{$name}-border {
+        border-color: var(--#{$name}) !important;
+    }
+    .#{$name}-box {
+        @include mini.text-box-base;
+        background: var(--#{$name});
+        color: var(--on-#{$name});
+        border-color: var(--#{$name});
+    }
+
+    // Buttons, like mini's colour buttons: they only set the --button-* colours mini's button
+    // rules read, so they go on a <Button> or a <button>. Filled: class="name-btn". Outlined:
+    // <Button invert class="name-btn">, or class="name-btn-invert".
+    .#{$name}-btn {
+        --button-text-color: var(--on-#{$name}) !important;
+        --button-background-color: var(--#{$name}) !important;
+        --button-border-color: var(--#{$name}) !important;
+        --button-invert-text-color: var(--#{$name}-text) !important;
+        --button-hover-text-color: var(--on-#{$name}) !important;
+        --button-hover-background-color: color-mix(in srgb, var(--#{$name}), black 20%) !important;
+        --button-hover-border-color: color-mix(in srgb, var(--#{$name}), black 20%) !important;
+    }
+    .#{$name}-btn-invert {
+        --button-text-color: var(--#{$name}-text) !important;
+        --button-background-color: transparent !important;
+        --button-border-color: var(--#{$name}) !important;
+        --button-invert-text-color: var(--#{$name}-text) !important;
+        --button-hover-text-color: var(--on-#{$name}) !important;
+        --button-hover-background-color: var(--#{$name}) !important;
+        --button-hover-border-color: var(--#{$name}) !important;
+    }
+    .#{$name}-btn, .#{$name}-btn-invert {
+        &:disabled, &:disabled:hover {
+            background: var(--light-grey);
+            border-color: var(--grey);
+            color: var(--grey);
+            box-shadow: none;
+        }
+    }
+}
+
+.tab-bar {
+    box-shadow: inset 0 -1px 0 var(--dark-grey);
+}
+.tab-bar > button {
+    color: var(--dark-grey);
+}
+
+.tab-bar > button:hover, .tab-bar > a:hover {
+    color: var(--link-hover-color);
+    border-color: var(--link-hover-color);
+}
+
+h1, h2, h3, h4, h5, h6, p, ul li, ol li {
+    color: var(--white);
+}
+
+// mini has no table styles: a plain, readable data table.
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+        text-align: left;
+        vertical-align: top;
+        padding: 0.5rem 0.75rem 0.5rem 0;
+        border-bottom: 1px solid var(--light-grey);
+    }
+
+    th {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+}
+
+// Long URLs and paths must wrap instead of widening the page.
+.wrap-anywhere {
+    overflow-wrap: anywhere;
+}
+
+// The header's title follows its background: black at the top of the page (top-black), white
+// once scrolled (scroll-white). Both switch on the body's top / scrolled classes, which mini's
+// useScrollState keeps up to date, so title and background always agree. --white and --black
+// swap in dark mode, together with the background.
+body.top header#header .site-title {
+    color: var(--white);
+}
+body.scrolled header#header .site-title {
+    color: var(--black);
+}
+
+// Compact list of a project's environments on the dashboard cards.
+.env-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+
+    li {
+        margin: 0.25rem 0;
+    }
+}
+
+// The project cards: equal-height boxes in each row.
+.project-card {
+    height: 100%;
+}
+
+.filters {
+    input[type="search"], select {
+        max-width: 100%;
+    }
+}
+
+// The small pencil next to editable things.
+.edit-btn {
+    background: none;
+    border: 0;
+    padding: 0.125rem 0.25rem;
+    margin: 0;
+    cursor: pointer;
+    color: var(--grey);
+    vertical-align: middle;
+    line-height: 1;
+
+    &:hover, &:focus-visible {
+        color: var(--black);
+    }
+}
+
+// mini's chips (a radio or checkbox inside label.chip) hide their input with display: none,
+// which also takes it out of the keyboard's reach. Here it's only made invisible: Tab and
+// the arrow keys still work, and the chip shows a ring while its input has the focus.
+// (Worth doing in mini itself.)
+label.chip {
+    position: relative;
+
+    > input[type="radio"], > input[type="checkbox"] {
+        display: block !important;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    &:has(> input:focus-visible) {
+        outline: 2px solid var(--chip-color, currentColor);
+        outline-offset: 2px;
+    }
+}
+
+.gh-avatar {
+    border-radius: 50%;
+}
