@@ -227,4 +227,13 @@ async function saved() {
 .nowrap {
   white-space: nowrap;
 }
+table thead tr th {
+  color: var(--grey);
+}
+table thead tr th, table tbody tr td, .attention-list li {
+  color: var(--white);
+  background-color: var(--false-black);
+  border-bottom: 2px solid var(--black);
+  padding: var(--padding);
+}
 </style>
