@@ -84,7 +84,7 @@ function onChildSaved() {
       <Box :size="100" v-if="error"><p class="danger-box">{{ error }}</p></Box>
       <Box :size="100" v-else-if="!project"><LoadingBox dark/></Box>
       <Box :size="100" padding="0" v-else>
-        <Boxes spaceBot>
+        <Boxes>
           <Box :size="100">
             <h1 class="m-0 giant">{{ project.name }}</h1>
             <p v-if="project.client_name" class="mt-0 mb-1 light-grey-text bold">{{ project.client_name }}</p>
@@ -196,8 +196,8 @@ function onChildSaved() {
               <Button size="S" invert class="ms-05" @click="open('link')">+ Add</Button>
             </h3>
             <p v-if="!project.links.length" class="muted-text">None.</p>
-            <p v-else>
-              <span v-for="l in project.links" :key="l.id" class="fw-bg me-1 flex align-items-center flex-nowrap pe-1">
+            <p v-else class="flex flex-wrap gap-1">
+              <span v-for="l in project.links" :key="l.id" class="flex align-items-center flex-nowrap pe-1">
                 <a :href="l.url" target="_blank" rel="noopener noreferrer" class="btn m-0">{{ l.label }}</a>
                 <EditButton :label="`Edit link ${l.label}`" @click="open('link', l)"/>
               </span>

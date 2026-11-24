@@ -169,7 +169,7 @@ async function saved() {
 
 <template>
   <Container>
-    <Boxes spaceBot>
+    <Boxes>
       <Box :size="100">
         <h1 class="m-0">Settings</h1>
         <p class="muted-text m-0">The catalog’s lists: the dashboard’s project groups, the clients, the technologies and their categories, the kinds of platform, where repositories are hosted.</p>

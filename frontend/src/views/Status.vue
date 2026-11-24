@@ -107,7 +107,7 @@ function nameState(n) {
 
 <template>
   <Container>
-    <Boxes spaceBot>
+    <Boxes>
       <Box :size="100">
         <h1 class="m-0">Status</h1>
         <p class="light-grey-text m-0">

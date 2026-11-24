@@ -88,7 +88,7 @@ function logout() {
           </Boxes>
         </Container>
       </Header>
-      <Main class="black-bg space-top">
+      <Main class="black-bg space-top-bot">
         <Space/>
         <Container v-if="showStatusBox">
           <Boxes>
