@@ -89,45 +89,49 @@ const editing = ref(null)
     </Boxes>
     <Space height="2"/>
     <!-- A card per repository, in the dashboard's style and the repositories' fourth colour. -->
-    <Boxes class="mb-2" gap="2">
+    <Boxes class="mb-2">
       <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox/></Box>
       <Box :size="100" v-else-if="catalog.error"><p class="danger-box">{{ catalog.error }}</p></Box>
       <Box :size="100" v-else-if="!repos.length">
         <p class="muted-text">No repository matches&nbsp;&nbsp;·&nbsp;&nbsp;<a href="#" @click.prevent="clearFilters">clear filters</a></p>
       </Box>
-      <Box v-for="r in repos" :key="r.slug" :size="33" padding="0">
-        <div class="repository-card p-15 repository-border wrap-anywhere fb-bg" style="border-top: 3px solid;">
-          <div class="flex justify-content-between align-items-start g-0 mb-1">
-            <h4 class="m-0 repository-text">
-              <Repository width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="repository-text me-05"/>{{ r.name }}
-            </h4>
-            <EditButton :label="`Edit ${r.name}`" @click="editing = r" class="ms-05"/>
-          </div>
-          <p class="mt-0 mb-1 flex flex-wrap g-0 XS">
-            <span class="repository-box border-0 b-rad-3 p-05 white-text me-05 mb-05">{{ r.hosting_label }}</span>
-            <span v-if="!r.private" class="dark-grey-box border info-border b-rad-3 p-05 me-05 mb-05">public</span>
-            <span v-if="r.archived" class="grey-box border light-grey-border b-rad-3 p-05 me-05 mb-05">archived</span>
-            <span v-if="r.fork" class="dark-grey-box border info-border b-rad-3 p-05 me-05 mb-05">fork</span>
-            <span v-if="needsProject(r)" class="dark-grey-box border warning-border b-rad-3 p-05 me-05 mb-05">no project</span>
-            <span v-if="r.github_missing" class="flag danger-bg border-0 b-rad-3 p-05 me-05 mb-05">not found on GitHub</span>
-          </p>
-          <p v-if="r.github_description" class="S m-0">{{ r.github_description }}</p>
-          <p v-if="r.language || r.pushed_at" class="muted-text XS m-0">
-            {{ r.language }}<template v-if="r.pushed_at"><template v-if="r.language">&nbsp;&nbsp;·&nbsp;&nbsp;</template>pushed {{ formatDate(r.pushed_at) }}</template>
-          </p>
-          <div class="S mt-05">
-            <div v-if="r.github_url"><a :href="r.github_url" target="_blank" rel="noopener noreferrer" class="repository-text">{{ r.github_url.replace(/^https:\/\//, '') }}</a></div>
-            <div v-else-if="r.remote_url"><code class="XS py-025 px-05">{{ r.remote_url }}</code></div>
-            <div v-if="r.local_path" class="mt-025"><code class="XS py-025 px-05">{{ r.local_path }}</code></div>
-          </div>
-          <ul v-if="r.project_details.length" class="env-list S">
-            <li v-for="p in r.project_details" :key="p.slug">
-              <RouterLink :to="{ name: 'project', params: { slug: p.slug } }">
-                <Folder width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05 project-text"/>{{ p.name }}
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
+      <Box :size="100">
+        <Boxes gap="2">
+          <Box v-for="r in repos" :key="r.slug" :size="33" padding="0">
+            <div class="repository-card p-15 repository-border wrap-anywhere fb-bg" style="border-top: 3px solid;">
+              <div class="flex justify-content-between align-items-start g-0 mb-1">
+                <h4 class="m-0 repository-text">
+                  <Repository width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="repository-text me-05"/>{{ r.name }}
+                </h4>
+                <EditButton :label="`Edit ${r.name}`" @click="editing = r" class="ms-05"/>
+              </div>
+              <p class="mt-0 mb-1 flex flex-wrap g-0 XS">
+                <span class="repository-box border-0 b-rad-3 p-05 white-text me-05 mb-05">{{ r.hosting_label }}</span>
+                <span v-if="!r.private" class="dark-grey-box border info-border b-rad-3 p-05 me-05 mb-05">public</span>
+                <span v-if="r.archived" class="grey-box border light-grey-border b-rad-3 p-05 me-05 mb-05">archived</span>
+                <span v-if="r.fork" class="dark-grey-box border info-border b-rad-3 p-05 me-05 mb-05">fork</span>
+                <span v-if="needsProject(r)" class="dark-grey-box border warning-border b-rad-3 p-05 me-05 mb-05">no project</span>
+                <span v-if="r.github_missing" class="flag danger-bg border-0 b-rad-3 p-05 me-05 mb-05">not found on GitHub</span>
+              </p>
+              <p v-if="r.github_description" class="S m-0">{{ r.github_description }}</p>
+              <p v-if="r.language || r.pushed_at" class="muted-text XS m-0">
+                {{ r.language }}<template v-if="r.pushed_at"><template v-if="r.language">&nbsp;&nbsp;·&nbsp;&nbsp;</template>pushed {{ formatDate(r.pushed_at) }}</template>
+              </p>
+              <div class="S mt-05">
+                <div v-if="r.github_url"><a :href="r.github_url" target="_blank" rel="noopener noreferrer" class="repository-text">{{ r.github_url.replace(/^https:\/\//, '') }}</a></div>
+                <div v-else-if="r.remote_url"><code class="XS py-025 px-05">{{ r.remote_url }}</code></div>
+                <div v-if="r.local_path" class="mt-025"><code class="XS py-025 px-05">{{ r.local_path }}</code></div>
+              </div>
+              <ul v-if="r.project_details.length" class="env-list S">
+                <li v-for="p in r.project_details" :key="p.slug">
+                  <RouterLink :to="{ name: 'project', params: { slug: p.slug } }">
+                    <Folder width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05 project-text"/>{{ p.name }}
+                  </RouterLink>
+                </li>
+              </ul>
+            </div>
+          </Box>
+        </Boxes>
       </Box>
     </Boxes>
 

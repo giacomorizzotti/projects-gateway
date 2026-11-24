@@ -68,7 +68,7 @@ function logout() {
     <Top/>
     <MessageBox/>
     <Sheet>
-      <Header class="top-black scroll-white">
+      <Header class="top-black scroll-color">
         <Container>
           <Boxes class="justify-content-between align-items-center">
             <Box class="brand">
@@ -77,7 +77,7 @@ function logout() {
                 <h3 class="site-title m-0 p">Projects Gateway</h3>
               </RouterLink>
             </Box>
-            <HeaderMenu :invert="scrollClass === 'top'"/>
+            <HeaderMenu invert/>
           </Boxes>
         </Container>
       </Header>

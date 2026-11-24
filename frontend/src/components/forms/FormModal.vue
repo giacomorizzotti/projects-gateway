@@ -29,7 +29,7 @@ async function askDelete() {
 <template>
   <Modal :visible="visible" @close="emit('close')">
     <form novalidate @submit.prevent="emit('save')">
-      <h3 class="mt-0 me-3">{{ title }}</h3>
+      <h3 class="mt-0 me-3 pt-1 px-1 black-text">{{ title }}</h3>
       <slot/>
       <p v-if="error" class="danger-box S" role="alert">{{ error }}</p>
       <div class="flex flex-wrap gap-05 align-items-center mt-1">

@@ -91,67 +91,67 @@ const deleteMessage = computed(() => {
   <FormModal :visible="visible" :title="platform ? `Edit ${platform.name}` : 'New platform'"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="40">
+    <Boxes gap="0">
+      <Box :size="66" class="py-0">
         <Field label="Name" id="plf-name" :error="form.errors.value.name">
           <input id="plf-name" v-model="data.name" class="w-100" required>
         </Field>
       </Box>
-      <Box :size="25">
+      <Box :size="33" class="py-0">
         <Field label="Slug" id="plf-slug" :error="form.errors.value.slug">
           <input id="plf-slug" v-model.trim="data.slug" class="w-100" placeholder="from the name">
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Kind" id="plf-kind" :error="form.errors.value.kind">
           <select id="plf-kind" v-model="data.kind" class="w-100">
             <option v-for="k in catalog.choices?.platform_kinds" :key="k.value" :value="k.value">{{ k.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="66" class="py-0">
         <Field label="Provider" id="plf-provider" :error="form.errors.value.provider">
           <input id="plf-provider" v-model="data.provider" class="w-100" placeholder="A hosting company, home…">
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="50" class="py-0">
         <Field label="Location" id="plf-location" :error="form.errors.value.location">
           <input id="plf-location" v-model="data.location" class="w-100">
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="50" class="py-0">
         <Field label="OS" id="plf-os" :error="form.errors.value.os">
           <input id="plf-os" v-model="data.os" class="w-100" placeholder="Ubuntu 24.04…">
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Public IPv4" id="plf-ipv4" :error="ipError('IPv4')"
                help="One per line: an address, or a network (198.51.100.0/24) when a CDN gives each site its own.">
           <textarea id="plf-ipv4" v-model="data.public_ipv4" class="w-100" rows="2"></textarea>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Public IPv6" id="plf-ipv6" :error="ipError('IPv6')"
                help="One per line, e.g. 2a02:4780::/32. Without any, a site’s IPv6 answer isn’t compared.">
           <textarea id="plf-ipv6" v-model="data.public_ipv6" class="w-100" rows="2"></textarea>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Hostnames" id="plf-hostnames" :error="form.errors.value.hostnames" help="One per line.">
           <textarea id="plf-hostnames" v-model="data.hostnames" class="w-100" rows="2"></textarea>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Dynamic DNS" id="plf-ddns" :error="form.errors.value.dynamic_dns" help="For a dynamic IP: the name that always points to it.">
           <input id="plf-ddns" v-model.trim="data.dynamic_dns" class="w-100">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="66" class="py-0">
         <Field label="Notes" id="plf-notes" :error="form.errors.value.notes" help="No secrets: say where they live instead.">
           <textarea id="plf-notes" v-model="data.notes" class="w-100" rows="4"></textarea>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="100" class="py-0">
         <Field label="Cleanup to do" id="plf-cleanup" :error="form.errors.value.cleanup_notes">
           <textarea id="plf-cleanup" v-model="data.cleanup_notes" class="w-100" rows="4"></textarea>
         </Field>

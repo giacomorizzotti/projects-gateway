@@ -45,13 +45,13 @@ const deleteMessage = computed(() => (props.link ? `Delete the “${props.link.l
   <FormModal :visible="visible" :title="link ? 'Edit link' : `New link${ownerName ? ' on ' + ownerName : ''}`"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="33">
+    <Boxes gap="0">
+      <Box :size="33" class="py-0">
         <Field label="Label" id="lf-label" :error="form.errors.value.label">
           <input id="lf-label" v-model="data.label" class="w-100" required placeholder="Admin, Docs, Console…">
         </Field>
       </Box>
-      <Box :size="66">
+      <Box :size="66" class="py-0">
         <Field label="URL" id="lf-url" :error="form.errors.value.url">
           <input id="lf-url" v-model.trim="data.url" type="url" class="w-100" required placeholder="https://…">
         </Field>

@@ -4,6 +4,7 @@
 import { computed, reactive, watch } from 'vue'
 import Boxes from '@/mini/components/Boxes.vue'
 import Box from '@/mini/components/Box.vue'
+import Sep from '@/mini/components/Sep.vue'
 import MultiAutocomplete from '@/mini/components/MultiAutocomplete.vue'
 import FormModal from '@/components/forms/FormModal.vue'
 import Field from '@/components/forms/Field.vue'
@@ -71,48 +72,50 @@ const deleteMessage = computed(() => (props.repository
   <FormModal :visible="visible" :title="repository ? `Edit ${repository.name}` : 'New repository'"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="40">
+    <Boxes gap="0">
+      <Box :size="66" class="py-0">
         <Field label="Name" id="rf-name" :error="form.errors.value.name">
           <input id="rf-name" v-model="data.name" class="w-100" required>
         </Field>
       </Box>
-      <Box :size="25">
+      <Box :size="33" class="py-0">
         <Field label="Slug" id="rf-slug" :error="form.errors.value.slug">
           <input id="rf-slug" v-model.trim="data.slug" class="w-100" placeholder="from the name">
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Hosting" id="rf-hosting" :error="form.errors.value.hosting">
           <select id="rf-hosting" v-model="data.hosting" class="w-100">
             <option v-for="h in catalog.choices?.repository_hostings" :key="h.value" :value="h.value">{{ h.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="50">
+      <Sep/>
+      <Box :size="50" class="py-0">
         <Field label="Remote" id="rf-remote" :error="form.errors.value.remote_url" help="The git remote, e.g. git@github.com:owner/repo.git">
           <input id="rf-remote" v-model.trim="data.remote_url" class="w-100">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Local path" id="rf-path" :error="form.errors.value.local_path" help="Where it’s cloned on the gateway’s host, if it is.">
           <input id="rf-path" v-model.trim="data.local_path" class="w-100">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Projects" :error="form.errors.value.projects">
           <MultiAutocomplete v-model="data.projects" :options="projectOptions"
                              placeholder="Link a project…" aria-label="Projects"/>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="rf-notes" :error="form.errors.value.notes">
           <textarea id="rf-notes" v-model="data.notes" class="w-100" rows="2"></textarea>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field :error="form.errors.value.private">
-          <label class="S"><input type="checkbox" v-model="data.private"> Private</label>
+          <label class="S">Visibility</label>
+          <label class="S chip"><input type="checkbox" v-model="data.private"> Private</label>
         </Field>
       </Box>
     </Boxes>

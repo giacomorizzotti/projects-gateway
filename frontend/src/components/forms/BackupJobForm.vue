@@ -87,25 +87,25 @@ const deleteMessage = computed(() => (props.job
   <FormModal :visible="visible" :title="job ? `Edit ${job.name}` : 'New backup job'"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="50">
+    <Boxes gap="0">
+      <Box :size="50" class="py-0">
         <Field label="Name" id="bjf-name" :error="form.errors.value.name">
           <input id="bjf-name" v-model="data.name" class="w-100" required>
         </Field>
       </Box>
-      <Box :size="25">
+      <Box :size="25" class="py-0">
         <Field label="Slug" id="bjf-slug" :error="form.errors.value.slug">
           <input id="bjf-slug" v-model.trim="data.slug" class="w-100" placeholder="from the name">
         </Field>
       </Box>
-      <Box :size="25">
+      <Box :size="25" class="py-0">
         <Field label="Platform" id="bjf-platform" :error="form.errors.value.platform" help="Its agent runs it.">
           <select id="bjf-platform" v-model="data.platform" class="w-100">
             <option v-for="p in catalog.platforms" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Project" id="bjf-project" :error="form.errors.value.project">
           <select id="bjf-project" v-model="data.project" class="w-100">
             <option :value="null">None (several projects)</option>
@@ -113,7 +113,7 @@ const deleteMessage = computed(() => (props.job
           </select>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Environment" id="bjf-env" :error="form.errors.value.environment">
           <select id="bjf-env" v-model="data.environment" class="w-100" :disabled="!projectEnvironments.length">
             <option :value="null">The whole project</option>
@@ -121,58 +121,58 @@ const deleteMessage = computed(() => (props.job
           </select>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Kind" id="bjf-kind" :error="form.errors.value.kind">
           <select id="bjf-kind" v-model="data.kind" class="w-100">
             <option v-for="k in choices.kinds" :key="k.value" :value="k.value">{{ k.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="data.kind === 'mysql' ? 33 : 66">
+      <Box :size="data.kind === 'mysql' ? 33 : 66" class="py-0">
         <Field :label="sourceLabel" id="bjf-source" :error="form.errors.value.source" :help="sourceHelp">
           <input id="bjf-source" v-model.trim="data.source" class="w-100" required>
         </Field>
       </Box>
-      <Box :size="33" v-if="data.kind === 'mysql'">
+      <Box :size="33" v-if="data.kind === 'mysql'" class="py-0">
         <Field label="Option file" id="bjf-cnf" :error="form.errors.value.credentials"
                help="Its name in the agent’s credentials folder (chmod 600), e.g. shop.cnf. Never the password.">
           <input id="bjf-cnf" v-model.trim="data.credentials" class="w-100">
         </Field>
       </Box>
-      <Box :size="100" v-if="data.kind === 'files'">
+      <Box :size="100" v-if="data.kind === 'files'" class="py-0">
         <Field label="Leave out" id="bjf-excludes" :error="form.errors.value.excludes" help="zip -x patterns, one per line.">
           <textarea id="bjf-excludes" v-model="data.excludes" class="w-100" rows="3"></textarea>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Folder in each target" id="bjf-folder" :error="form.errors.value.folder">
           <input id="bjf-folder" v-model.trim="data.folder" class="w-100" placeholder="the slug">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="File name prefix" id="bjf-prefix" :error="form.errors.value.prefix"
                help="e.g. shop → shop_DB_BK_20261113000001.sql.gz">
           <input id="bjf-prefix" v-model.trim="data.prefix" class="w-100" placeholder="the slug">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Every" id="bjf-frequency" :error="form.errors.value.frequency">
           <select id="bjf-frequency" v-model="data.frequency" class="w-100">
             <option v-for="f in choices.frequencies" :key="f.value" :value="f.value">{{ f.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="25">
+      <Box :size="25" class="py-0">
         <Field label="At (hour)" id="bjf-hour" :error="form.errors.value.hour">
           <input id="bjf-hour" v-model.number="data.hour" type="number" min="0" max="23" class="w-100">
         </Field>
       </Box>
-      <Box :size="25" class="flex align-items-end">
+      <Box :size="25" class="flex align-items-end py-0">
         <Field :error="form.errors.value.enabled">
-          <label class="S"><input type="checkbox" v-model="data.enabled"> On the schedule</label>
+          <label class="S chip"><input type="checkbox" v-model="data.enabled"> On the schedule</label>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Made in" id="bjf-first" :error="form.errors.value.target_ids">
           <select id="bjf-first" v-model="placement.first" class="w-100">
             <option :value="null" disabled>Choose a target</option>
@@ -180,15 +180,15 @@ const deleteMessage = computed(() => (props.job
           </select>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Copied to">
-          <label v-for="t in platformTargets.filter(t => t.id !== placement.first)" :key="t.id" class="S block">
+          <label v-for="t in platformTargets.filter(t => t.id !== placement.first)" :key="t.id" class="S block chip">
             <input type="checkbox" :value="t.id" v-model="placement.copies"> {{ t.name }}
           </label>
           <span v-if="platformTargets.length < 2" class="S muted-text">No other target on this platform.</span>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="bjf-notes" :error="form.errors.value.notes">
           <textarea id="bjf-notes" v-model="data.notes" class="w-100" rows="2"></textarea>
         </Field>

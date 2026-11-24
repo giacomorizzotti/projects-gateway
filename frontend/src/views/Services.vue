@@ -64,7 +64,7 @@ const editing = ref(null)
     <Boxes>
       <!-- One section per kind, a card per service: the dashboard's layout. -->
       <Box size="100" v-for="g in (catalog.error ? [] : groups)" :key="g.kind" class="mb-1">
-        <Boxes class="align-items-stretch" gap="2">
+        <Boxes class="align-items-start" gap="2">
           <Box :size="100" padding="0">
             <h3 class="p light m-0 grey-text">{{ g.kind }} <span class="flag border-0 service-text">{{ g.services.length }}</span></h3>
           </Box>

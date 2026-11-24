@@ -73,20 +73,20 @@ const deleteMessage = computed(() =>
              :title="environment ? `${project.name}&nbsp;&nbsp;·&nbsp;&nbsp;${environment.name}` : `New environment for ${project.name}`"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="25">
+    <Boxes gap="0">
+      <Box :size="25" class="py-0">
         <Field label="Kind" id="ef-kind" :error="form.errors.value.kind">
           <select id="ef-kind" v-model="data.kind" class="w-100">
             <option v-for="k in catalog.choices?.environment_kinds" :key="k.value" :value="k.value">{{ k.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Name" id="ef-name" :error="form.errors.value.name">
           <input id="ef-name" v-model="data.name" class="w-100" required placeholder="PROD, DEV, DEM 2025…">
         </Field>
       </Box>
-      <Box :size="40">
+      <Box :size="40" class="py-0">
         <Field label="Platform" id="ef-platform" :error="form.errors.value.platform">
           <select id="ef-platform" v-model="data.platform" class="w-100">
             <option value="">Not recorded</option>
@@ -94,34 +94,34 @@ const deleteMessage = computed(() =>
           </select>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="URLs" id="ef-urls" :error="form.errors.value.urls" help="One per line, http(s) only. The first one is shown on the dashboard.">
           <textarea id="ef-urls" v-model="data.urls" class="w-100" rows="2" placeholder="https://…"></textarea>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Path" id="ef-path" :error="form.errors.value.path" help="Folder on the platform, or the local repo.">
           <input id="ef-path" v-model="data.path" class="w-100">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Runtime" id="ef-runtime" :error="form.errors.value.runtime" help="e.g. Docker Compose, gunicorn + nginx, static.">
           <input id="ef-runtime" v-model="data.runtime" class="w-100">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Deploy" id="ef-deploy" :error="form.errors.value.deploy" help="How it gets there: git pull, FTP, deploy script…">
           <input id="ef-deploy" v-model="data.deploy" class="w-100">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="ef-notes" :error="form.errors.value.notes">
           <textarea id="ef-notes" v-model="data.notes" class="w-100" rows="2"></textarea>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="">
         <Field :error="form.errors.value.checks_enabled" help="Off for hosts the gateway can’t reach (internal networks).">
-          <label class="S"><input type="checkbox" v-model="data.checks_enabled"> Health checks on its URLs</label>
+          <label class="S chip"><input type="checkbox" v-model="data.checks_enabled"> Health checks on its URLs</label>
         </Field>
       </Box>
     </Boxes>

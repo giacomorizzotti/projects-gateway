@@ -72,7 +72,7 @@ const hosted = computed(() => {
 
 <template>
   <Container>
-    <Boxes spaceTopBot>
+    <Boxes spaceTopBot class="align-items-start">
       <Box :size="100">
         <RouterLink :to="{ name: 'platforms' }" class="S platform-text">← Platforms</RouterLink>
       </Box>
@@ -84,12 +84,12 @@ const hosted = computed(() => {
           <h1 class="m-0">{{ platform.name }}</h1>
           <p class="m-0">
             <span class="platform-box XS me-05">{{ platform.kind_label }}</span>
-            <span class="false-white-box XS">{{ [platform.provider, platform.location, platform.os].filter(Boolean).join('&nbsp;&nbsp;·&nbsp;&nbsp;') }}</span>
+            <span class="false-white-box XS">{{ [platform.provider, platform.location, platform.os].filter(Boolean).join('  ·  ') }}</span>
           </p>
           <p class="mt-1 mb-0">
             <Button color="warning" size="S" @click="open('platform', platform)">Edit platform</Button>
           </p>
-          <div v-if="platform.notes" class="mt-1">
+          <div v-if="platform.notes" class="mt-1 false-black-bg white-text p-15">
             <RichText :text="platform.notes"/>
           </div>
           <div v-if="platform.cleanup_notes" class="mt-15 p-1 border warning-border b-rad-5">
@@ -97,7 +97,7 @@ const hosted = computed(() => {
             <RichText :text="platform.cleanup_notes" class=" S"/>
           </div>
           <p class="mt-15 flex align-items-center flex-wrap">
-            <span v-for="l in platform.links" :key="l.id" class="fw-bg me-1 flex align-items-center flex-nowrap pe-1">
+            <span v-for="l in platform.links" :key="l.id" class="me-1 flex align-items-center flex-nowrap pe-1">
               <a :href="l.url" target="_blank" rel="noopener noreferrer" class="btn m-0">{{ l.label }}</a>
               <EditButton :label="`Edit link ${l.label}`" @click="open('link', l)"/>
             </span>
@@ -107,19 +107,23 @@ const hosted = computed(() => {
         <Box :size="33">
           <table class="data-table S wrap-anywhere">
             <tbody>
-              <tr v-if="platform.dynamic_dns"><th style="vertical-align: middle;">Dynamic DNS</th><td><code>{{ platform.dynamic_dns }}</code></td></tr>
-              <tr v-for="f in ipFamilies(platform.public_ips)" :key="f.label"><th style="vertical-align: middle;">Public {{ f.label }}</th><td><code v-for="ip in f.ips" :key="ip" class="me-05 mb-0">{{ ip }}</code></td></tr>
-              <tr v-if="platform.hostnames.length"><th style="vertical-align: middle;">Hostnames</th><td><code v-for="ip in platform.hostnames" :key="ip" class="me-05 mb-0">{{ ip }}</code></td></tr>
+              <tr v-if="platform.dynamic_dns"><th style="vertical-align: middle;">Dynamic DNS</th><td><code class="black-bg">{{ platform.dynamic_dns }}</code></td></tr>
+              <tr v-for="f in ipFamilies(platform.public_ips)" :key="f.label"><th style="vertical-align: middle;">Public {{ f.label }}</th><td><code v-for="ip in f.ips" :key="ip" class="me-05 mb-0 black-bg">{{ ip }}</code></td></tr>
+              <tr v-if="platform.hostnames.length"><th style="vertical-align: middle;">Hostnames</th><td><code v-for="ip in platform.hostnames" :key="ip" class="me-05 mb-0 black-bg">{{ ip }}</code></td></tr>
             </tbody>
           </table>
         </Box>
 
         <Box :size="100">
-          <h3 class="">Hosted here <span class="flag regular light-grey-border b-rad-3">{{ hosted.length }} projects</span></h3>
-          <p v-if="!hosted.length" class="muted-text">Nothing recorded on this platform.</p>
+          <h3 class="m-0">Hosted here <span class="flag regular light-grey-border b-rad-3">{{ hosted.length }} projects</span></h3>
+          <p v-if="!hosted.length" class="light-grey-text">Nothing recorded on this platform.</p>
         </Box>
-        <Box v-for="row in hosted" :key="row.project.slug" :size="33" padding="0">
-          <ProjectCard :project="row.project" :environments="row.envs" :showPlatform="false"/>
+        <Box :size="100" class="p-y">
+          <Boxes gap="2">
+            <Box v-for="row in hosted" :key="row.project.slug" :size="33" padding="0">
+              <ProjectCard :project="row.project" :environments="row.envs" :showPlatform="false"/>
+            </Box>
+          </Boxes>
         </Box>
       </template>
     </Boxes>
@@ -132,3 +136,12 @@ const hosted = computed(() => {
     </template>
   </Container>
 </template>
+
+<style lang="scss" scoped>
+  table tbody tr th, table tbody tr td{
+    color: var(--white);
+    background-color: var(--false-black);
+    border-bottom: 2px solid var(--black);
+    padding: var(--padding);
+  }
+</style>

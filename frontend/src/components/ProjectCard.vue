@@ -29,7 +29,7 @@ const services = computed(() => {
 const hasDetails = computed(() => repos.value.length || techs.value.length || services.value.length)
 // On the closed button, so the repos show without opening it.
 const detailsLabel = computed(() =>
-  'Details' + (repos.value.length ? `&nbsp;&nbsp;·&nbsp;&nbsp;${repos.value.length} repo${repos.value.length === 1 ? '' : 's'}` : ''))
+  'Details' + (repos.value.length ? `  ·  ${repos.value.length} repo${repos.value.length === 1 ? '' : 's'}` : ''))
 </script>
 
 <template>
@@ -54,25 +54,26 @@ const detailsLabel = computed(() =>
       </li>
     </ul>
     <Collapsible v-if="hasDetails" :openLabel="detailsLabel" closeLabel="Hide details"
-                 buttonSize="XS" buttonInvert buttonColor="grey" buttonClass="m-0 mt-05" contentClass="S mt-05">
-      <p v-for="r in repos" :key="r.slug" class="mt-0 mb-05">
+                buttonSize="XS" buttonInvert buttonColor="grey" buttonClass="m-0" contentClass="S mt-05">
+      <p v-for="r in repos" :key="r.slug" class="mt-0 mb-1 lh-15">
         <Repository width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05 repository-text"/><span class="grey-text XS">Repo:</span><br/>
         <a v-if="r.github_url" :href="r.github_url" target="_blank" rel="noopener noreferrer" class="repository-text">{{ r.name }}</a>
         <RouterLink v-else :to="{ name: 'repositories' }" class="repository-text">{{ r.name }}</RouterLink>
         <span v-if="r.language" class="XS muted-text">&nbsp;&nbsp;·&nbsp;&nbsp;{{ r.language }}</span>
         <span v-if="r.archived" class="XS muted-text">&nbsp;&nbsp;·&nbsp;&nbsp;archived</span>
       </p>
-      <p v-if="techs.length" class="m-0 mt-05">
-        <CubeScan width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05 technology-text"/>
-        <span class="grey-text XS">Tech:</span><br/>
-        <span v-for="t in techs" :key="t" class="technology-box XS me-05 b-rad-5">{{ t }}</span>
-      </p>
-      <p v-if="services.length" class="mt-0 mb-05">
+      <p v-if="services.length" class="mt-0 mb-1 lh-15">
         <Cloud width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05 service-text"/>
         <span class="grey-text XS">Services:</span><br/>
         <span v-for="(s, i) in services" :key="s.id"><template v-if="i">, </template>
           <RouterLink :to="{ name: 'services' }">{{ s.name }}</RouterLink></span>
       </p>
+      <p v-if="techs.length" class="m-0 mb-1 lh-15">
+        <CubeScan width="0.9em" height="0.9em" aria-hidden="true" style="vertical-align: -0.1em" class="me-05 technology-text"/>
+        <span class="grey-text XS">Tech:</span><br/>
+        <span v-for="t in techs" :key="t" class="technology-box XS mt-05 me-05">{{ t }}</span>
+      </p>
+      <Space/>
     </Collapsible>
   </div>
 </template>

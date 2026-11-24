@@ -55,45 +55,45 @@ const deleteMessage = computed(() => (props.target
   <FormModal :visible="visible" :title="target ? `Edit ${target.name}` : 'New backup target'"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="50">
+    <Boxes gap="0">
+      <Box :size="66" class="py-0">
         <Field label="Name" id="btf-name" :error="form.errors.value.name">
           <input id="btf-name" v-model="data.name" class="w-100" required placeholder="NAS">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="33" class="py-0">
         <Field label="Platform" id="btf-platform" :error="form.errors.value.platform" help="Its agent writes here.">
           <select id="btf-platform" v-model="data.platform" class="w-100">
             <option v-for="p in catalog.platforms" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Folder" id="btf-path" :error="form.errors.value.path"
                help="Absolute. It must also be inside the agent’s own target_roots.">
           <input id="btf-path" v-model.trim="data.path" class="w-100" required placeholder="/home/backups">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Must be mounted" id="btf-mount" :error="form.errors.value.mount"
                help="For a share: nothing is written while it isn’t mounted.">
           <input id="btf-mount" v-model.trim="data.mount" class="w-100" placeholder="/mnt/nas">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Where it is" id="btf-location" :error="form.errors.value.location">
           <select id="btf-location" v-model="data.location" class="w-100">
             <option v-for="l in locations" :key="l.value" :value="l.value">{{ l.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Keep" id="btf-keep" :error="form.errors.value.keep"
                help="The newest N backups of each job. 0 keeps everything (you delete by hand).">
           <input id="btf-keep" v-model.number="data.keep" type="number" min="0" class="w-100">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="btf-notes" :error="form.errors.value.notes">
           <textarea id="btf-notes" v-model="data.notes" class="w-100" rows="2"></textarea>
         </Field>

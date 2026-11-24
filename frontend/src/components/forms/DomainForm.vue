@@ -114,19 +114,19 @@ const deleteMessage = computed(() => (props.domain
   <FormModal :visible="visible" :title="domain ? `Edit ${domain.name}` : 'Track a domain'"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="50">
+    <Boxes gap="0">
+      <Box :size="66" class="py-0">
         <Field label="Domain" id="df-name" :error="form.errors.value.name" help="The registered name, e.g. example.com.">
           <input id="df-name" v-model.trim="data.name" class="w-100" required>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="33" class="py-0">
         <Field label="Expires on" id="df-expires" :error="form.errors.value.expires_on"
                help="Filled from the registry where it publishes it; .eu and .es don’t.">
           <input id="df-expires" v-model="data.expires_on" type="date" class="w-100">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Registrar" id="df-registrar" :error="form.errors.value.registrar_service" :help="registrarHelp">
           <select id="df-registrar" v-model="data.registrar_service" class="w-100">
             <option :value="null">Not linked</option>
@@ -137,7 +137,7 @@ const deleteMessage = computed(() => (props.domain
                  placeholder="New service’s name, e.g. Aruba" aria-label="New registrar service’s name">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="DNS" id="df-dns" :error="form.errors.value.dns_service" :help="dnsHelp">
           <select id="df-dns" v-model="data.dns_service" class="w-100">
             <option :value="null">Not linked</option>
@@ -148,7 +148,7 @@ const deleteMessage = computed(() => (props.domain
                  placeholder="New service’s name, e.g. Cloudflare" aria-label="New DNS service’s name">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Client" id="df-client" :error="form.errors.value.client" help="When you renew it for a client.">
           <select id="df-client" v-model="data.client" class="w-100">
             <option :value="null">Mine</option>
@@ -159,18 +159,19 @@ const deleteMessage = computed(() => (props.domain
                  placeholder="New client’s name" aria-label="New client’s name">
         </Field>
       </Box>
-      <Box :size="50" class="flex align-items-end">
+      <Box :size="50" class="py-0">
+        <label class="S">Renews</label>
         <Field :error="form.errors.value.auto_renew">
-          <label class="S"><input type="checkbox" v-model="data.auto_renew"> Renews automatically</label>
+          <label class="S chip m-0"><input type="checkbox" v-model="data.auto_renew"> Renews automatically</label>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Also used by" :error="form.errors.value.projects"
                help="Projects whose URLs are under it are linked by themselves; add the others (a redirect, a parked name).">
           <MultiAutocomplete v-model="data.projects" :options="projectOptions" placeholder="Link a project…" aria-label="Projects"/>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="df-notes" :error="form.errors.value.notes">
           <textarea id="df-notes" v-model="data.notes" class="w-100" rows="2"></textarea>
         </Field>

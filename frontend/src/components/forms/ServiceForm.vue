@@ -68,35 +68,35 @@ const deleteMessage = computed(() => {
   <FormModal :visible="visible" :title="service ? `Edit ${service.name}` : 'New service'"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="50">
+    <Boxes gap="0">
+      <Box :size="66" class="py-0">
         <Field label="Name" id="sf-name" :error="form.errors.value.name">
           <input id="sf-name" v-model.trim="data.name" class="w-100" required>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="33" class="py-0">
         <Field label="Kind" id="sf-kind" :error="form.errors.value.kind" help="What it does for the projects, e.g. Privacy (GDPR), Payments, Email.">
           <input id="sf-kind" v-model.trim="data.kind" class="w-100" list="sf-kinds">
           <datalist id="sf-kinds"><option v-for="k in kinds" :key="k" :value="k"/></datalist>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="66" class="py-0">
         <Field label="Link" id="sf-url" :error="form.errors.value.url" help="Its dashboard or login page.">
           <input id="sf-url" v-model.trim="data.url" type="url" class="w-100" placeholder="https://">
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="33" class="py-0">
         <Field label="Account" id="sf-account" :error="form.errors.value.account"
                help="Which login or team it’s under. Never a password: those stay in the password manager.">
           <input id="sf-account" v-model.trim="data.account" class="w-100" autocomplete="off">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Used by" :error="form.errors.value.projects">
           <MultiAutocomplete v-model="data.projects" :options="projectOptions" placeholder="Link a project…" aria-label="Projects"/>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="sf-notes" :error="form.errors.value.notes" help="The plan, when it renews, what it’s set up for…">
           <textarea id="sf-notes" v-model="data.notes" class="w-100" rows="2"></textarea>
         </Field>

@@ -62,21 +62,21 @@ const deleteMessage = computed(() => props.dependency
   <FormModal :visible="visible" :title="`${project.name} depends on…`"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="66">
+    <Boxes gap="0">
+      <Box :size="66" class="py-0">
         <Field label="Project" :error="form.errors.value.depends_on">
           <Autocomplete v-model="data.depends_on" :options="projectOptions"
                         placeholder="Search a project…" aria-label="Depends on"/>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="For" id="df-kind" :error="form.errors.value.kind">
           <select id="df-kind" v-model="data.kind" class="w-100">
             <option v-for="k in catalog.choices?.dependency_kinds" :key="k.value" :value="k.value">{{ k.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Included as" id="df-via" :error="form.errors.value.via">
           <select id="df-via" v-model="data.via" class="w-100">
             <option value="">Not recorded</option>
@@ -84,12 +84,12 @@ const deleteMessage = computed(() => props.dependency
           </select>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Version" id="df-version" :error="form.errors.value.version" help="@main, v1.6, a commit…">
           <input id="df-version" v-model.trim="data.version" class="w-100" maxlength="60">
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="In" id="df-environment" :error="form.errors.value.environment" help="When one environment includes it differently.">
           <select id="df-environment" v-model="data.environment" class="w-100">
             <option value="">The whole project</option>
@@ -97,12 +97,12 @@ const deleteMessage = computed(() => props.dependency
           </select>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Reference" id="df-reference" :error="form.errors.value.reference" help="The URL, path or symlink it uses.">
           <input id="df-reference" v-model.trim="data.reference" class="w-100" maxlength="500">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="df-notes" :error="form.errors.value.notes">
           <input id="df-notes" v-model="data.notes" class="w-100" maxlength="255">
         </Field>

@@ -108,32 +108,32 @@ const deleteMessage = computed(() => {
   <FormModal :visible="visible" :title="project ? `Edit ${project.name}` : 'New project'"
              :saving="form.saving.value" :error="form.formError.value" :deleteMessage="deleteMessage"
              @save="save" @close="emit('close')" @delete="remove">
-    <Boxes>
-      <Box :size="66">
+    <Boxes gap="0">
+      <Box :size="66" class="py-0">
         <Field label="Name" id="pf-name" :error="form.errors.value.name">
           <input id="pf-name" v-model="data.name" class="w-100" required>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Slug" id="pf-slug" :error="form.errors.value.slug" help="The page address. Empty: from the name.">
           <input id="pf-slug" v-model.trim="data.slug" class="w-100" placeholder="from the name">
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Group" id="pf-group" :error="form.errors.value.group">
           <select id="pf-group" v-model="data.group" class="w-100">
             <option v-for="g in catalog.choices?.project_groups" :key="g.value" :value="g.value">{{ g.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Status" id="pf-status" :error="form.errors.value.status">
           <select id="pf-status" v-model="data.status" class="w-100">
             <option v-for="s in catalog.choices?.project_statuses" :key="s.value" :value="s.value">{{ s.label }}</option>
           </select>
         </Field>
       </Box>
-      <Box :size="33">
+      <Box :size="33" class="py-0">
         <Field label="Client" id="pf-client" :error="form.errors.value.client">
           <select id="pf-client" v-model="data.client" class="w-100">
             <option value="">None (mine)</option>
@@ -144,32 +144,32 @@ const deleteMessage = computed(() => {
                  placeholder="New client’s name" aria-label="New client’s name">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Description" id="pf-description" :error="form.errors.value.description" help="One line, shown on the dashboard card.">
           <input id="pf-description" v-model="data.description" class="w-100" maxlength="255">
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Technologies" :error="form.errors.value.technologies">
           <MultiAutocomplete v-model="data.technologies" :options="techOptions" allowCreate
                              placeholder="Add a technology…" aria-label="Technologies"
                              @create="createTechnology"/>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Repositories" :error="form.errors.value.repository_ids">
           <MultiAutocomplete v-model="data.repository_ids" :options="repoOptions"
                              placeholder="Link a repository…" aria-label="Repositories"/>
         </Field>
       </Box>
-      <Box :size="50">
+      <Box :size="50" class="py-0">
         <Field label="Services" :error="form.errors.value.service_ids">
           <MultiAutocomplete v-model="data.service_ids" :options="serviceOptions" allowCreate
                              placeholder="Add a service…" aria-label="Services"
                              @create="createService"/>
         </Field>
       </Box>
-      <Box :size="100">
+      <Box :size="100" class="py-0">
         <Field label="Notes" id="pf-notes" :error="form.errors.value.notes || form.errors.value.notes_markdown"
                help="Markdown (Preview shows it), or plain text with the Plain switch. No secrets: say where they live instead.">
           <MarkdownEditor id="pf-notes" v-model="data.notes" v-model:markdown="data.notes_markdown" class="w-100" min-height="120px"/>
