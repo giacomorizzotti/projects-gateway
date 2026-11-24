@@ -77,7 +77,7 @@ const hosted = computed(() => {
         <RouterLink :to="{ name: 'platforms' }" class="S platform-text">← Platforms</RouterLink>
       </Box>
       <Box :size="100" v-if="error"><p class="danger-box">{{ error }}</p></Box>
-      <Box :size="100" v-else-if="!platform"><LoadingBox/></Box>
+      <Box :size="100" v-else-if="!platform"><LoadingBox dark/></Box>
 
       <template v-else>
         <Box :size="66">

@@ -135,7 +135,7 @@ function clearFilters() {
 
     <!-- mx-1: the same inset as the filter boxes above -->
     <Tabs v-model="view" :tabs="VIEWS" label="View" class="m-1">
-      <LoadingBox v-if="catalog.loading && !catalog.choices"/>
+      <LoadingBox dark v-if="catalog.loading && !catalog.choices"/>
       <p v-else-if="catalog.error" class="danger-box mx-1">{{ catalog.error }}</p>
       <p v-else-if="!groups.length" class="muted-text mx-1">No project matches.</p>
 

@@ -90,7 +90,7 @@ const editing = ref(null)
     <Space height="2"/>
     <!-- A card per repository, in the dashboard's style and the repositories' fourth colour. -->
     <Boxes class="mb-2">
-      <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox/></Box>
+      <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox dark/></Box>
       <Box :size="100" v-else-if="catalog.error"><p class="danger-box">{{ catalog.error }}</p></Box>
       <Box :size="100" v-else-if="!repos.length">
         <p class="muted-text">No repository matches&nbsp;&nbsp;·&nbsp;&nbsp;<a href="#" @click.prevent="clearFilters">clear filters</a></p>

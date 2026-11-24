@@ -48,7 +48,7 @@ onMounted(async () => {
           <p>{{ problem }}</p>
           <RouterLink :to="{ name: 'login' }" class="btn">Back to sign in</RouterLink>
         </template>
-        <LoadingBox v-else/>
+        <LoadingBox dark v-else/>
       </Box>
     </Boxes>
   </Container>

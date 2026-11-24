@@ -175,7 +175,7 @@ async function saved() {
         <p class="muted-text m-0">The catalog’s lists: the dashboard’s project groups, the clients, the technologies and their categories, the kinds of platform, where repositories are hosted.</p>
       </Box>
 
-      <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox/></Box>
+      <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox dark/></Box>
       <Box :size="100" v-else-if="catalog.error"><p class="danger-box">{{ catalog.error }}</p></Box>
 
       <Box :size="100" v-else class="wrap-anywhere">

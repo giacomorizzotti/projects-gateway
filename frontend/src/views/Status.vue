@@ -131,7 +131,7 @@ function nameState(n) {
         </p>
       </Box>
 
-      <Box :size="100" v-if="!status.data && status.loading"><LoadingBox/></Box>
+      <Box :size="100" v-if="!status.data && status.loading"><LoadingBox dark/></Box>
       <Box :size="100" v-else-if="status.error && !status.data"><p class="danger-box">{{ status.error }}</p></Box>
 
       <template v-if="status.data">

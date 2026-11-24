@@ -66,7 +66,7 @@ function saved() {
         </p>
       </Box>
 
-      <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox/></Box>
+      <Box :size="100" v-if="catalog.loading && !catalog.choices"><LoadingBox dark/></Box>
       <Box :size="100" v-else-if="catalog.error"><p class="danger-box">{{ catalog.error }}</p></Box>
 
       <Box :size="100" v-else class="wrap-anywhere">

@@ -82,7 +82,7 @@ function onChildSaved() {
         <RouterLink :to="{ name: 'dashboard' }"><span class="project-text">← Projects</span></RouterLink>
       </Box>
       <Box :size="100" v-if="error"><p class="danger-box">{{ error }}</p></Box>
-      <Box :size="100" v-else-if="!project"><LoadingBox/></Box>
+      <Box :size="100" v-else-if="!project"><LoadingBox dark/></Box>
       <Box :size="100" padding="0" v-else>
         <Boxes spaceBot>
           <Box :size="100">

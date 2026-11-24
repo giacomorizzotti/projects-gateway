@@ -116,7 +116,7 @@ function saved() {
         </p>
       </Box>
 
-      <Box :size="100" v-if="!data && !error"><LoadingBox/></Box>
+      <Box :size="100" v-if="!data && !error"><LoadingBox dark/></Box>
       <Box :size="100" v-if="error"><p class="danger-box">{{ error }}</p></Box>
 
       <template v-if="data">
