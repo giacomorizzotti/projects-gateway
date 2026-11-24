@@ -30,6 +30,9 @@ const status = useStatusStore()
 // signed out (the store keeps its last data after a sign-out).
 const showStatusBox = computed(() =>
   auth.isAuthenticated && route.name !== 'status' && status.problems.length > 0)
+// Main clears the fixed header for every page, but mini's LoginView already does it itself
+// (spaceTopBot): on the login page Main adds no space of its own, or the gap is doubled.
+const mainSpacing = computed(() => route.name !== 'login')
 // The logo goes home to an unfiltered dashboard, even when it's already open.
 const dashboardFilters = useDashboardFilters()
 // 'top' or 'scrolled', as the header's own state: the menu is inverted (white) only at the
@@ -88,8 +91,8 @@ function logout() {
           </Boxes>
         </Container>
       </Header>
-      <Main class="black-bg space-top-bot">
-        <Space/>
+      <Main :class="['black-bg', { 'space-top-bot': mainSpacing }]">
+        <Space v-if="mainSpacing"/>
         <Container v-if="showStatusBox">
           <Boxes>
             <Box :size="100" class="fb-bg">
