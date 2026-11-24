@@ -145,9 +145,14 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
 }
 
-# Login: an OAuth 2 auth server, Authorization Code + PKCE in the frontend; here every API
-# request's Bearer token is checked against its userinfo endpoint. Unset: nobody gets in.
-OAUTH2_USERINFO_ENDPOINT = os.environ.get('OAUTH2_USERINFO_ENDPOINT', '')
+# Login: any OpenID Connect provider, Authorization Code + PKCE in the frontend with a public
+# client (no secret). The endpoints come from OIDC_ISSUER's discovery document (accounts/oidc.py);
+# every API request's Bearer token is checked at its userinfo endpoint. OIDC_USERNAME_CLAIM is the
+# claim matched against the users added with add_user, at each one's first login. Unset issuer
+# or client: nobody gets in.
+OIDC_ISSUER = os.environ.get('OIDC_ISSUER', '')
+OIDC_CLIENT_ID = os.environ.get('OIDC_CLIENT_ID', '')
+OIDC_USERNAME_CLAIM = os.environ.get('OIDC_USERNAME_CLAIM', '') or 'preferred_username'
 
 # Read-only fine-grained token for the GitHub sync (repos under GITHUB_OWNER only).
 GITHUB_OWNER = os.environ.get('GITHUB_OWNER', '')

@@ -51,7 +51,7 @@ A planner in the gateway, and an agent on each server.
 - **Read-only towards everything it watches.** The checks are plain HTTP requests, the GitHub token needs read access only, and the host scan never fetches or writes. It runs git without taking locks and strips credentials from remote URLs.
 - **The containers never see the server's project folders.** What only the host can see (systemd, nginx, git working copies, logs) arrives as the host scan's JSON file. Mounting the projects folder would hand the app every project's `.env`.
 - **Ports on 127.0.0.1 only**, behind a reverse proxy on the host that handles TLS. Docker's published ports bypass host firewalls such as UFW.
-- **No sign-ups.** Login is OAuth 2 (Authorization Code with PKCE) against your auth server. Only the usernames you add with `add_user` get in. Production has no password login and no Django admin.
+- **No sign-ups.** Login is OpenID Connect (Authorization Code with PKCE) through the provider you choose. Only the usernames you add with `add_user` get in, and each is tied to its provider account at its first login, so someone who later takes that username on the provider can't get in. Production has no password login and no Django admin.
 - **Small on purpose**: SQLite, one app container and one worker container, with no message queue and no cron inside Docker.
 
 ## How it fits together
@@ -78,7 +78,7 @@ The app and the worker run from the same image. The worker loops on a 5-second t
 
 It grew out of one person's setup, and a few things still assume one like it:
 
-- **Login** needs an OAuth 2 server with django-oauth-toolkit's URL layout (`/o/authorize/`, `/o/token/`, `/o/userinfo/`, `/o/revoke_token/`), and a public PKCE client registered for the app, with `…/callback` as its redirect URI. The backend checks each request's token against `OAUTH2_USERINFO_ENDPOINT`. There's no local login.
+- **Login** needs an OpenID Connect provider that publishes a discovery document: Keycloak, Authentik, Authelia, Zitadel, GitLab, Google, django-oauth-toolkit and most others do. Register a public client (PKCE, no secret) with `…/callback` as its redirect URI, and let the app's origin call the provider's token endpoint (CORS). There's no local login, and GitHub can't be used: it isn't an OpenID Connect provider.
 - **mini** must be checked out next to this repository (`../mini`) when you build: `frontend/src/mini` is a relative symlink into it, and `docker-compose.yml` passes it to the Docker build (`MINI_DIR` points elsewhere).
 - **The host scan** looks for git repositories under `/home/projects` and nginx sites in `/etc/nginx/sites-enabled`. It's written for Ubuntu with systemd, nginx and certbot.
 
@@ -94,14 +94,12 @@ venv/bin/pip install -r backend/requirements.txt
 (cd frontend && npm ci)
 
 cp .env.example .env
-# In .env: DJANGO_DEBUG=True, DATA_DIR=/absolute/path/to/this/repo/data/dev, OAUTH2_USERINFO_ENDPOINT
+# In .env: DJANGO_DEBUG=True, DATA_DIR=/absolute/path/to/this/repo/data/dev, OIDC_ISSUER, OIDC_CLIENT_ID
 mkdir -p data/dev
-# The frontend's auth settings, for Vite:
-printf 'VITE_AUTH_SERVER_BASE=https://auth.example.com\nVITE_OAUTH_CLIENT_ID=your-client-id\n' > frontend/.env.local
 
 cd backend
 ../venv/bin/python manage.py migrate
-../venv/bin/python manage.py seed_dev_data --user <your auth-server username>
+../venv/bin/python manage.py seed_dev_data --user <your username on the provider>
 cd ..
 
 ./dev.sh start      # Django on 127.0.0.1:8010, Vite on http://localhost:5180
@@ -110,7 +108,7 @@ cd ..
 - **Demo data:** `seed_dev_data` fills the development database with invented data from `seed/demo.yaml`. The domains end in `.example` and the addresses come from the documentation ranges. It also makes up live status around that data, so every page and every kind of "needs attention" item has something to show.
 - **Safety:** it refuses to run without `DJANGO_DEBUG`, or when the settings point at the production database.
 - **What stays still in dev:** no worker runs there, so the made-up status stays as it is.
-- **Login:** it goes through your auth server in development too. Register `http://localhost:5180/callback` as a redirect URI.
+- **Login:** it goes through your provider in development too. Register `http://localhost:5180/callback` as a redirect URI, and allow `http://localhost:5180` as an origin.
 - **Your machine only:** both dev servers listen locally. Don't start Vite with `--host`: a dev server reachable from the internet runs whatever it's asked to.
 
 Tests:
@@ -122,13 +120,14 @@ cd backend && ../venv/bin/python manage.py test
 ## Production
 
 1. **Configure.** Check out mini next to this repository, and fill in `.env` (see [Configuration](#configuration)). Docker Compose reads it too, and won't start without these:
-   - `DJANGO_SECRET_KEY`, `SITE_URL` and `OAUTH2_USERINFO_ENDPOINT`;
+   - `DJANGO_SECRET_KEY`, `SITE_URL`, `OIDC_ISSUER` and `OIDC_CLIENT_ID`;
    - `GATEWAY_HOST`, your host name;
-   - `GATEWAY_UID` and `GATEWAY_GID`, the user the containers run as, which should own `./data`;
-   - `VITE_AUTH_SERVER_BASE` and `VITE_OAUTH_CLIENT_ID`, which are built into the frontend.
+   - `GATEWAY_UID` and `GATEWAY_GID`, the user the containers run as, which should own `./data`.
+
+   Nothing about your deployment is built into the image: the frontend reads its sign-in settings from the API when it starts.
 2. **Start:** `docker compose up -d --build`. Migrations run when the app starts. The app listens on `127.0.0.1:8040` (`GATEWAY_PORT`), and `./data` holds the database.
 3. **Proxy:** put a reverse proxy in front. There's an nginx example in `deploy/` for use with certbot.
-4. **Let yourself in:** `docker compose exec app python manage.py add_user <username> --name "Your Name"`.
+4. **Let yourself in:** `docker compose exec app python manage.py add_user <username> --name "Your Name"`, with your username on the provider. Your first login ties the account to you.
 5. **Fill the catalog** in the app, or seed an empty one from a YAML file in `seed/demo.yaml`'s format: `manage.py import_inventory <file>`.
 
 Optional parts:
@@ -158,8 +157,9 @@ Everything comes from `.env` at the repository root. `.env.example` explains eac
 | `DJANGO_ALLOWED_HOSTS` | The host names the app answers to, comma-separated. |
 | `DATA_DIR` | Where the database and `scan.json` live. The default is `data/`; the containers always use `/data`. |
 | `SITE_URL` | The app's public address, for the links in notifications. |
-| `OAUTH2_USERINFO_ENDPOINT` | Where the backend checks each request's token. |
-| `VITE_AUTH_SERVER_BASE`, `VITE_OAUTH_CLIENT_ID` | The auth server and the app's public client, built into the frontend: build arguments in Docker, `frontend/.env.local` in development. |
+| `OIDC_ISSUER` | The OpenID Connect provider's issuer, as its discovery document names it. The endpoints come from that document, which is read once an hour. |
+| `OIDC_CLIENT_ID` | The app's public client on the provider (PKCE, no secret). |
+| `OIDC_USERNAME_CLAIM` | The claim holding the username given to `add_user`. The default is `preferred_username`. |
 | `GATEWAY_HOST`, `GATEWAY_UID`, `GATEWAY_GID`, `GATEWAY_PORT` | Docker Compose: the public host name, the user the containers run as, the port on 127.0.0.1 (default 8040). |
 | `MINI_DIR` | Docker Compose: where mini is checked out. The default is `../mini`. |
 | `GITHUB_OWNER`, `GITHUB_TOKEN`, `GITHUB_SYNC_HOURS` | The GitHub sync. It's off without a token; the default interval is 6 hours. |
@@ -178,7 +178,7 @@ Run them from `backend/` with `../venv/bin/python manage.py …`, or in the cont
 
 | Command | What it does |
 |---|---|
-| `add_user <username> --name "…"` | Lets an auth-server account in. Nobody gets in otherwise. |
+| `add_user <username> --name "…" [--rebind]` | Lets a provider account in. Nobody gets in otherwise. `--rebind` forgets which provider account the user signs in as, so the next login with that username ties it again, e.g. after the account was replaced. |
 | `import_inventory [file]` | Seeds an empty catalog from YAML (the demo by default). It refuses when the catalog isn't empty. |
 | `seed_dev_data [--user …]` | Replaces the development database with the demo data and made-up status. |
 | `refresh_dev_db` | Replaces the development database with a snapshot of the production one, read through SQLite's backup API, then migrates the copy. |
@@ -193,7 +193,7 @@ Run them from `backend/` with `../venv/bin/python manage.py …`, or in the cont
 ```
 backend/
   gateway/      settings (from .env), URLs, the single-page app's fallback view
-  accounts/     login: bearer tokens checked against the auth server; add_user
+  accounts/     login: the provider's discovery document, bearer tokens checked at its userinfo; add_user
   catalog/      the catalog's models and API, the GitHub sync, the worker
   monitoring/   health checks, the host scan's reader, "needs attention", notifications
   domains/      domains and registry lookups

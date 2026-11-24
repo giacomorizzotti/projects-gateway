@@ -42,9 +42,6 @@ services:
       additional_contexts:
         # A checkout of mini (https://github.com/giacomorizzotti/mini), next to this repo by default.
         mini: ${MINI_DIR:-../mini}
-      args:
-        VITE_AUTH_SERVER_BASE: ${VITE_AUTH_SERVER_BASE:?set VITE_AUTH_SERVER_BASE in .env}
-        VITE_OAUTH_CLIENT_ID: ${VITE_OAUTH_CLIENT_ID:?set VITE_OAUTH_CLIENT_ID in .env}
     ports:
       - "127.0.0.1:${GATEWAY_PORT:-8040}:8000"
     healthcheck:

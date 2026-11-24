@@ -9,7 +9,7 @@ This repository is public. A deployment's own notes (its server, host names, cli
 ```
 backend/    Django 5.2 LTS + DRF, SQLite (data/gateway.sqlite3)
   gateway/    settings (everything from the repo-root .env), urls, the SPA fallback view
-  accounts/   login: Bearer tokens checked against the auth server's userinfo; add_user command
+  accounts/   login: the OIDC provider's discovery document (oidc.py), Bearer tokens checked at its userinfo, Identity (the provider account each user is bound to); add_user
   catalog/    models, API, import_inventory, seed_dev_data, refresh_dev_db, the worker command
   monitoring/ live status: health checks, the host scan, "needs attention" (/api/status/), notifications
   backups/    the backup planner: targets, jobs, runs, agents; the agents' own API (/api/agent/…)
@@ -36,19 +36,19 @@ DJANGO_DEBUG=True DATA_DIR=<scratch dir> ../venv/bin/python manage.py test   # a
 ../venv/bin/python manage.py seed_dev_data [--user <name>]   # the dev database ← the demo (seed/demo.yaml + made-up status); keeps the logins
 ../venv/bin/python manage.py refresh_dev_db            # the dev database ← a snapshot of the live one instead, then migrated
 ../venv/bin/python manage.py import_inventory [file]   # seed an EMPTY catalog from YAML (default: the demo; refuses otherwise)
-../venv/bin/python manage.py add_user <auth-server username> --name "Full Name"
+../venv/bin/python manage.py add_user <provider username> --name "Full Name" [--rebind]
 ../venv/bin/python manage.py sync_github               # needs GITHUB_OWNER and GITHUB_TOKEN in .env
 ../venv/bin/python manage.py check_health              # the worker's run, now (checks, host scan), then what needs attention; --notify sends too
 ../venv/bin/python manage.py notify_test               # a test message on every channel set up in .env (and your Telegram chat ID)
 ../venv/bin/python manage.py agent_token <platform>    # a new agent token, printed once: pipe it into the agent's token file
 python3 ../deploy/scan_local.py --out ../data/dev/scan.json   # the host scan, for the dev database
 
-# Frontend (VITE_AUTH_SERVER_BASE and VITE_OAUTH_CLIENT_ID in frontend/.env.local)
+# Frontend (its sign-in settings come from Django at startup, /api/auth/config/: run both)
 cd frontend
 npm run dev      # http://localhost:5180, proxies /api to 127.0.0.1:8010
 npm run build    # dist/, served by Django (WhiteNoise + spa_index) in production
 
-# Production (Docker Compose; GATEWAY_*, VITE_* and MINI_DIR come from .env)
+# Production (Docker Compose; GATEWAY_* and MINI_DIR come from .env)
 docker compose up -d --build   # app on 127.0.0.1:GATEWAY_PORT (8040) behind a host reverse proxy; worker = background jobs
 docker compose logs -f worker
 docker compose exec -T app python manage.py shell -c "…"   # change the production catalog from the shell
@@ -64,7 +64,7 @@ docker compose exec -T app python manage.py shell -c "…"   # change the produc
 ## Conventions
 
 - **Public repository**: nothing that belongs to a deployment goes into tracked files: no real host names, domains, clients, server paths or addresses (examples use `.example` domains and the documentation IP ranges). Those belong in `.env` or `private/`.
-- **Login**: an OAuth 2 auth server, Authorization Code + PKCE through mini's `stores/auth.js`; endpoints in `frontend/src/config/auth.js` (django-oauth-toolkit's layout under `VITE_AUTH_SERVER_BASE`), public client, no secret. The backend never creates users: only usernames added with `add_user` get in, even if anyone can sign up on the auth server. Keep it that way.
+- **Login**: any OpenID Connect provider, Authorization Code + PKCE through mini's `stores/auth.js`, public client, no secret. Nothing provider-specific in the code: `OIDC_ISSUER`'s discovery document gives the endpoints (`accounts/oidc.py`, cached an hour, its `issuer` must match), the backend checks each Bearer token at its userinfo (cached 60 s by the token's hash), and the frontend gets the endpoints and `OIDC_CLIENT_ID` from `/api/auth/config/` before it mounts (`config/auth.js` exports `let`s that mini's modules read through live bindings; `views/SignInUnavailable.vue` if that fails). `revocation_endpoint` is optional (not in OIDC Discovery): without it, logout only forgets the browser's tokens. The backend never creates users: only usernames added with `add_user` get in, even if anyone can sign up on the provider. Keep it that way. A username is matched only at that user's first login (`OIDC_USERNAME_CLAIM`, default `preferred_username`), which binds the user to the account's `sub` for that issuer (`accounts.Identity`); after that only the `sub` counts, because OIDC doesn't promise usernames stay unique or unchanged. `add_user --rebind` forgets the binding.
 - **No secrets in the catalog**, only pointers to where they live. The GitHub token goes in `.env` only (never in git, never in chat), and never reaches the browser: the API only says whether there is one.
 - **GitHub sync** (`catalog/github.py`) is read-only towards GitHub and takes only repos owned by `GITHUB_OWNER`. It refuses a token of another account (every repo would look deleted).
 - **Health checks** (`monitoring/checks.py`) send real requests to every public URL. They skip environments with checks off, archived/discontinued projects and projects in a hidden group, retry a failure twice within a check, and throw away a run where nothing answered (the gateway offline). A URL that still fails is only *failing* (`failing_since`, amber, no event, no notification): the worker checks it again 5 minutes later (`CONFIRM_AFTER`, `checks.confirm`) with up to 3 sites that are up on other platforms as controls, and it goes down (dated from the first failure) only if it fails again while a control answers. If no control answers either, nothing is decided and it's tried again a minute later: name lookups and home connections drop out for a minute now and then. A confirmation run never moves `checks_ran_at`. A failed lookup ("DNS error") is told apart from a name that doesn't exist. Up = any answer below 500. The user agent is a plain `projects-gateway/1.0`: some hosts' firewalls drop the "Mozilla/5.0 (compatible; …)" bot form. A platform's `public_ips` may hold networks (some CDNs give each site its own addresses), and DNS is compared per address family. Without an IPv6 route the checks connect over IPv4 only (otherwise IPv6's "Network unreachable", as the last address tried, hides IPv4's real error). On platforms that renew their own certificates (`checks.renews_here`), the other names on each site's certificate are resolved too: one pointing elsewhere means the renewal will fail.

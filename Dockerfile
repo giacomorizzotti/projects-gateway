@@ -1,6 +1,7 @@
 # Projects Gateway: one image, Django serving the API and the built Vue app.
 # Built by docker-compose.yml, which passes a checkout of mini (MINI_DIR, by default ../mini)
-# as the extra build context "mini", and the auth settings as build arguments.
+# as the extra build context "mini". Nothing about the deployment is built in: the frontend reads
+# its sign-in settings from the API at startup.
 
 FROM node:22-alpine AS frontend
 # frontend/src/mini is a relative symlink to ../mini/website/src/mini next to the repo, and
@@ -12,9 +13,6 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
-# The auth server and the app's public client ID, baked into the build (no secret: PKCE).
-ARG VITE_AUTH_SERVER_BASE
-ARG VITE_OAUTH_CLIENT_ID
 RUN npm run build
 
 FROM python:3.12-slim
