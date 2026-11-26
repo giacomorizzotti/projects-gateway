@@ -173,7 +173,7 @@ class Environment(models.Model):
         ordering = ['project__name', 'position', 'id']
 
     def __str__(self):
-        return f'{self.project}&nbsp;&nbsp;·&nbsp;&nbsp;{self.name}'
+        return f'{self.project}  ·  {self.name}'
 
 
 class RepositoryHosting(models.Model):

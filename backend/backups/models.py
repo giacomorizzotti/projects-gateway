@@ -39,7 +39,7 @@ class BackupTarget(models.Model):
         ordering = ['platform__name', 'name']
 
     def __str__(self):
-        return f'{self.platform}&nbsp;&nbsp;·&nbsp;&nbsp;{self.name}'
+        return f'{self.platform}  ·  {self.name}'
 
 
 class BackupJob(models.Model):

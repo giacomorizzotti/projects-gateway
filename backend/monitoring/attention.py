@@ -58,7 +58,7 @@ def items(now=None):
     for c in checks:
         env, project = c.environment, c.environment.project
         host = urlsplit(c.url).hostname or c.url
-        where = f'{project.name}&nbsp;&nbsp;·&nbsp;&nbsp;{env.name}'
+        where = f'{project.name}  ·  {env.name}'
         if c.state == UrlCheck.State.DOWN:
             add(f'down:{env.id}:{c.url}', 'down', 'danger', f'Down: {host}',
                 f'{where}: {c.error}, since {_local(c.since)}', project=project)
