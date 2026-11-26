@@ -97,11 +97,24 @@ def scan_repo(path):
     return repo
 
 
-def resolve(name):
-    try:
-        return sorted({i[4][0] for i in socket.getaddrinfo(name, None, type=socket.SOCK_STREAM)})
-    except (OSError, UnicodeError):
-        return []
+# A failed lookup is tried again before a name counts as not resolving: some home routers drop
+# a few lookups in a hundred, and one dropped lookup would flag a site until the next scan.
+# (The gateway's health checks retry the same way.) A name that really doesn't resolve costs
+# LOOKUP_TRIES - 1 pauses.
+LOOKUP_TRIES = 3
+LOOKUP_PAUSE = 1        # seconds
+
+
+def resolve(name, sleep=time.sleep):
+    for attempt in range(1, LOOKUP_TRIES + 1):
+        try:
+            return sorted({i[4][0] for i in socket.getaddrinfo(name, None, type=socket.SOCK_STREAM)})
+        except UnicodeError:
+            return []                   # not a name a lookup could ever answer
+        except OSError:
+            if attempt < LOOKUP_TRIES:
+                sleep(LOOKUP_PAUSE)
+    return []
 
 
 def directive(text, name):

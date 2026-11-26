@@ -617,6 +617,24 @@ class ScanScriptTests(TestCase):
         self.assertEqual(s.directive(conf, 'server_name'), [['a.example', 'www.a.example']])
         self.assertEqual(s.directive(conf, 'ssl_certificate'), [['/x/fullchain.pem']])
 
+    def test_a_failed_lookup_is_tried_again(self):
+        answers = [socket.gaierror(-3, 'Temporary failure in name resolution'),
+                   [(socket.AF_INET, socket.SOCK_STREAM, 6, '', ('192.0.2.7', 0))]]
+
+        def getaddrinfo(*args, **kwargs):
+            answer = answers.pop(0) if len(answers) > 1 else answers[0]
+            if isinstance(answer, Exception):
+                raise answer
+            return answer
+        pauses = []
+        with mock.patch.object(self.script.socket, 'getaddrinfo', getaddrinfo):
+            self.assertEqual(self.script.resolve('a.example', sleep=pauses.append), ['192.0.2.7'])
+        self.assertEqual(pauses, [self.script.LOOKUP_PAUSE])
+        # A name that never resolves: every try, then none.
+        with mock.patch.object(self.script.socket, 'getaddrinfo', side_effect=socket.gaierror(-2, 'Name or service not known')) as lookup:
+            self.assertEqual(self.script.resolve('b.example', sleep=lambda s: None), [])
+        self.assertEqual(lookup.call_count, self.script.LOOKUP_TRIES)
+
     def test_finds_repos_but_not_inside_skipped_folders(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
